@@ -66,7 +66,7 @@ class HashWord(dict):
         name = input("Enter a name for new passcode:")
         size = int(input("What is the max character count for this password?"))
         algo = input("Choose a hashing algorithm:\n\t1) sha256\n\t2) md5\n\t3) shake256\n\t4) blake2b")
-        seed = input("Choose a seed to create your password with:")
+        seed = input("Choose a seed to create your password with or press Enter:")
         match algo:
             case '2':
                 if len(seed) > 0:
@@ -89,6 +89,27 @@ class HashWord(dict):
                 else:
                     self[name] = PwData(name, size, hash_alg='sha256')
 
+    def add(self):
+        c = input("Would you like to add a password? (y/n)")
+        while(c != 'n' or c != 'N'):
+            if c == 'y' or c == 'Y':
+                self.create()             
+            else:
+                print("Please enter (y/n)")
+
+    def list(self):
+        count = 0
+        for key in self:
+            count += 1
+            print(count, "\t", key)
+
 if __name__ == "__main__":
     h = HashWord()
-
+    match sys.argv[1]:
+        case 'add':
+            h.add()
+        case 'list':
+            h.list()
+        case _:
+            if sys.argv[1] 
+            print("Usage:\n\tadd\n\tlist\n\t<name of password>")
