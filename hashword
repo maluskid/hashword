@@ -129,6 +129,9 @@ if __name__ == "__main__":
                 try:
                     if sys.argv[2] in h:
                         self.delete(sys.argv[2])
+                except Exception as e:
+                    print("Error ", e, " encountered deleting ", sys.argv[2])
+                    print("Usage:\n\thashword add\n\thashword list\n\thashword <name of password>\n\thashword del <name of password>\n")
             case _:
                 if sys.argv[1] in h:
                     print(h[sys.argv[1]].getpw())
