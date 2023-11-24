@@ -26,25 +26,13 @@ class PwData:
             raise(TypeError("Aliases must be formatted as a list"))
         self.alias_list=alias_list
 
-    def seed_generator():
-        alphabet = ['0','1','2','3','4','5','6','7','8',
-                    '9','a','b','c','d','e','f','g','h',
-                    'i','j','k','l','m','n','o','p','q',
-                    'r','s','t','u','v','w','x','y','z'] 
-        random.seed()
-        out = ''
-        for i in range(24):
-            index = random.randrange(36)
-            out += alphabet[index]
-        return out
-
     def add_alias(self, alias):
         self.alias_list.append(alias)
 
     def getpw(self):
         h = None
         match self.hash_alg:
-            case 'shake256':
+            case 'sha128':
                 h = hashlib.shake_256()
             case 'blake2b':
                 h = hashlib.blake2b()
@@ -80,25 +68,33 @@ class HashWord(dict):
     def create(self):
         name = input("Enter a name for new passcode:\n")
         size = int(input("What is the max character count for this password?\n"))
-        algo = input("Choose a hashing algorithm:\n\t1) sha256\n\t2) md5\n\t3) shake256\n\t4) blake2b\n")
+        algo = input("Choose a hashing algorithm:\n\t1) sha256\n\t2) md5\n\t3) sha128\n\t4) blake2b\n")
         seed = input("Choose a seed to create your password with or press Enter:\n").strip()
         match algo:
             case '2':
+                if size > 32:
+                    size = 32
                 if len(seed) > 0:
                     self[name] = PwData(name, size, seed=seed + '\n', alg='md5')
                 else:
                     self[name] = PwData(name, size, alg='md5')
             case '3':
+                if size > 32:
+                    size = 32
                 if len(seed) > 0:
-                    self[name] = PwData(name, size, seed=seed + '\n', alg='shake256')
+                    self[name] = PwData(name, size, seed=seed + '\n', alg='sha128')
                 else:
-                    self[name] = PwData(name, size, alg='shake256')
+                    self[name] = PwData(name, size, alg='sha128')
             case '4':
+                if size > 64:
+                    size = 64
                 if len(seed) > 0:
                     self[name] = PwData(name, size, seed=seed + '\n', alg='blake2b')
                 else:
                     self[name] = PwData(name, size, alg='blake2b')
             case _:
+                if size > 64:
+                    size = 64
                 if len(seed) > 0:
                     self[name] = PwData(name, size, seed=seed + '\n')
                 else:
@@ -112,10 +108,8 @@ class HashWord(dict):
 
     def delete(self, name):
         filepath = PATH + name
-        try:
-            os.unlink(filepath)
-        except Exception as e:
-            print("Exception", e, "encountered trying to remove", name)
+        print("Deleting ", filepath)
+        os.unlink(filepath)
 
 if __name__ == "__main__":
     h = HashWord()
@@ -129,7 +123,7 @@ if __name__ == "__main__":
             case 'del':
                 try:
                     if sys.argv[2] in h:
-                        self.delete(sys.argv[2])
+                        h.delete(sys.argv[2])
                 except Exception as e:
                     print("Error ", e, " encountered deleting ", sys.argv[2])
                     print("Usage:\n\thashword add\n\thashword list\n\thashword <name of password>\n\thashword del <name of password>\n")
