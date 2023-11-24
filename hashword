@@ -1,0 +1,139 @@
+#! /bin/python3
+import hashlib, os, pickle, random, sys
+
+def seed_generator():
+    alphabet = ['0','1','2','3','4','5','6','7','8',
+                '9','a','b','c','d','e','f','g','h',
+                'i','j','k','l','m','n','o','p','q',
+                'r','s','t','u','v','w','x','y','z'] 
+    random.seed()
+    out = ''
+    for i in range(24):
+        index = random.randrange(36)
+        out += alphabet[index]
+    return out
+
+class PwData:
+
+    def __init__(self, name, size, alg='sha256', seed=seed_generator(), alias_list=list()):
+        self.name = name
+        self.size = size
+        self.hash_alg = alg
+        self.seed = seed
+        if type(alias_list) is not list:
+            raise(TypeError("Aliases must be formatted as a list"))
+        self.alias_list=alias_list
+
+    def seed_generator():
+        alphabet = ['0','1','2','3','4','5','6','7','8',
+                    '9','a','b','c','d','e','f','g','h',
+                    'i','j','k','l','m','n','o','p','q',
+                    'r','s','t','u','v','w','x','y','z'] 
+        random.seed()
+        out = ''
+        for i in range(24):
+            index = random.randrange(36)
+            out += alphabet[index]
+        return out
+
+    def add_alias(self, alias):
+        self.alias_list.append(alias)
+
+    def getpw(self):
+        h = None
+        match self.hash_alg:
+            case 'shake256':
+                h = hashlib.shake_256()
+            case 'blake2b':
+                h = hashlib.blake2b()
+            case 'md5':
+                h = hashlib.md5()
+            case _:
+                h = hashlib.sha256()
+
+        h.update(self.seed.encode())
+        temp = h.hexdigest()
+        print(temp)
+        out = ''
+        for i in range(self.size):
+            out += temp[i]  
+
+        return out
+
+class HashWord(dict):
+    
+    def populate(self):
+        for file in os.listdir('~/.hashword/Data/'):
+            path = "~/.hashword/Data/" + file
+            with open(path, 'rb') as f:
+                item = pickle.load(f)
+                self[item.name] = item
+
+    def save(self):
+        for key in self:
+            print("Saving:", self[key])
+            path = '~/.hashword/Data/' + self[key].name
+            with open(path, mode='wb') as f:
+                pickle.dump(self[key], f)
+    
+    def create(self):
+        name = input("Enter a name for new passcode:\n")
+        size = int(input("What is the max character count for this password?\n"))
+        algo = input("Choose a hashing algorithm:\n\t1) sha256\n\t2) md5\n\t3) shake256\n\t4) blake2b\n")
+        seed = input("Choose a seed to create your password with or press Enter:\n").strip()
+        match algo:
+            case '2':
+                if len(seed) > 0:
+                    self[name] = PwData(name, size, seed=seed + '\n', hash_alg='md5')
+                else:
+                    self[name] = PwData(name, size, hash_alg='md5')
+            case '3':
+                if len(seed) > 0:
+                    self[name] = PwData(name, size, seed=seed + '\n', hash_alg='shake256')
+                else:
+                    self[name] = PwData(name, size, hash_alg='shake256')
+            case '4':
+                if len(seed) > 0:
+                    self[name] = PwData(name, size, seed=seed + '\n', hash_alg='blake2b')
+                else:
+                    self[name] = PwData(name, size, hash_alg='blake2b')
+            case _:
+                if len(seed) > 0:
+                    self[name] = PwData(name, size, seed=seed + '\n')
+                else:
+                    self[name] = PwData(name, size)
+
+    def list(self):
+        count = 0
+        for key in self:
+            count += 1
+            print(count, "\t", key)
+
+    def delete(self, name):
+        path = "~/.hashword/Data/" + name
+        try:
+            os.unlink(path)
+        except Exception as e:
+            print("Exception", e, "encountered trying to remove", name)
+
+if __name__ == "__main__":
+    h = HashWord()
+    h.populate()
+    try:
+        match sys.argv[1]:
+            case 'add':
+                h.create()
+            case 'list':
+                h.list()
+            case 'del':
+                try:
+                    if sys.argv[2] in h:
+                        self.delete(sys.argv[2])
+            case _:
+                if sys.argv[1] in h:
+                    print(h[sys.argv[1]].getpw())
+                else:
+                    print("Usage:\n\thashword add\n\thashword list\n\thashword <name of password>\n\thashword del <name of password>\n")
+    except Exception as e:
+        print("Error ", e, " encountered.\n\nUsage:\n\thashword add\n\thashword list\n\thashword <name of password>")
+    h.save()
