@@ -85,19 +85,19 @@ class HashWord(dict):
         match algo:
             case '2':
                 if len(seed) > 0:
-                    self[name] = PwData(name, size, seed=seed + '\n', hash_alg='md5')
+                    self[name] = PwData(name, size, seed=seed + '\n', alg='md5')
                 else:
-                    self[name] = PwData(name, size, hash_alg='md5')
+                    self[name] = PwData(name, size, alg='md5')
             case '3':
                 if len(seed) > 0:
-                    self[name] = PwData(name, size, seed=seed + '\n', hash_alg='shake256')
+                    self[name] = PwData(name, size, seed=seed + '\n', alg='shake256')
                 else:
-                    self[name] = PwData(name, size, hash_alg='shake256')
+                    self[name] = PwData(name, size, alg='shake256')
             case '4':
                 if len(seed) > 0:
-                    self[name] = PwData(name, size, seed=seed + '\n', hash_alg='blake2b')
+                    self[name] = PwData(name, size, seed=seed + '\n', alg='blake2b')
                 else:
-                    self[name] = PwData(name, size, hash_alg='blake2b')
+                    self[name] = PwData(name, size, alg='blake2b')
             case _:
                 if len(seed) > 0:
                     self[name] = PwData(name, size, seed=seed + '\n')
