@@ -1,6 +1,8 @@
 #! /bin/python3
-import hashlib, os, pickle, random, sys
+import getpass, hashlib, os, pickle, random, sys
 
+USER = getpass.getuser()
+PATH = "/home/" + USER + "/.hashword/Data/"
 def seed_generator():
     alphabet = ['0','1','2','3','4','5','6','7','8',
                 '9','a','b','c','d','e','f','g','h',
@@ -63,16 +65,16 @@ class PwData:
 class HashWord(dict):
     
     def populate(self):
-        for file in os.listdir('~/.hashword/Data/'):
-            path = "~/.hashword/Data/" + file
-            with open(path, 'rb') as f:
+        for file in os.listdir(PATH):
+            filepath = PATH + file
+            with open(filepath, 'rb') as f:
                 item = pickle.load(f)
                 self[item.name] = item
 
     def save(self):
         for key in self:
             print("Saving:", self[key])
-            path = '~/.hashword/Data/' + self[key].name
+            filepath = PATH + self[key].name
             with open(path, mode='wb') as f:
                 pickle.dump(self[key], f)
     
@@ -110,7 +112,7 @@ class HashWord(dict):
             print(count, "\t", key)
 
     def delete(self, name):
-        path = "~/.hashword/Data/" + name
+        path = PATH + name
         try:
             os.unlink(path)
         except Exception as e:
