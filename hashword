@@ -73,9 +73,8 @@ class HashWord(dict):
 
     def save(self):
         for key in self:
-            print("Saving:", self[key])
             filepath = PATH + self[key].name
-            with open(path, mode='wb') as f:
+            with open(filepath, mode='wb') as f:
                 pickle.dump(self[key], f)
     
     def create(self):
@@ -112,9 +111,9 @@ class HashWord(dict):
             print(count, "\t", key)
 
     def delete(self, name):
-        path = PATH + name
+        filepath = PATH + name
         try:
-            os.unlink(path)
+            os.unlink(filepath)
         except Exception as e:
             print("Exception", e, "encountered trying to remove", name)
 
