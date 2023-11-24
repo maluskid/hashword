@@ -109,7 +109,12 @@ class HashWord(dict):
     def delete(self, name):
         filepath = PATH + name
         print("Deleting ", filepath)
-        os.unlink(filepath)
+        try:
+            print("Trying os.unlink()")
+            os.unlink(filepath)
+        except Exception as e:
+            print("Failed with ", e.strerror)
+            print("Errno", e.code)
 
 if __name__ == "__main__":
     h = HashWord()
