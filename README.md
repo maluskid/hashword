@@ -6,4 +6,5 @@ Usage:
     `hashword add
     hashword list
     hashword <name of password>
-    hashword del <name of password>`
+    hashword del <name of password>
+    hashword alias <name of password> <alias>`
