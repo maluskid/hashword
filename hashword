@@ -1,7 +1,7 @@
 #! /bin/python3
 import getpass, hashlib, os, pickle, random, sys
 
-USER = getpass.getuser()
+USER = getpass.getuser().strip()
 PATH = "/home/" + USER + "/.hashword/Data/"
 def seed_generator():
     alphabet = ['0','1','2','3','4','5','6','7','8',
@@ -107,14 +107,8 @@ class HashWord(dict):
             print(count, "\t", key)
 
     def delete(self, name):
-        filepath = PATH + name
-        print("Deleting ", filepath)
-        try:
-            print("Trying os.unlink()")
-            os.unlink(filepath)
-        except Exception as e:
-            print("Failed with ", e.strerror)
-            print("Errno", e.code)
+        filepath = (PATH + name).strip()
+        os.unlink(filepath)
 
 if __name__ == "__main__":
     h = HashWord()
@@ -130,7 +124,7 @@ if __name__ == "__main__":
                     if sys.argv[2] in h:
                         h.delete(sys.argv[2])
                 except Exception as e:
-                    print("Error ", e, " encountered deleting ", sys.argv[2])
+                    print("Error ", e, " encountered deleting", sys.argv[2])
                     print("Usage:\n\thashword add\n\thashword list\n\thashword <name of password>\n\thashword del <name of password>\n")
             case _:
                 if sys.argv[1] in h:
@@ -138,5 +132,5 @@ if __name__ == "__main__":
                 else:
                     print("Usage:\n\thashword add\n\thashword list\n\thashword <name of password>\n\thashword del <name of password>\n")
     except Exception as e:
-        print("Error ", e, " encountered.\n\nUsage:\n\thashword add\n\thashword list\n\thashword <name of password>")
+        print("Error ", e, " encountered.\n\nUsage:\n\thashword add\n\thashword list\n\thashword <name of password>\n\thashword del <name of password>\n")
     h.save()
