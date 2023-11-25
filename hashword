@@ -1,13 +1,25 @@
 #! /bin/python3
-import getpass, hashlib, os, pickle, random, sys
+import getpass
+import hashlib
+import os
+import pickle
+import random
+import stat
+import sys
 
 USER = getpass.getuser().strip()
 PATH = "/home/" + USER + "/.hashword/Data/"
+try:
+    os.makedirs(PATH)
+except Exception:
+    pass
+
+
 def seed_generator():
-    alphabet = ['0','1','2','3','4','5','6','7','8',
-                '9','a','b','c','d','e','f','g','h',
-                'i','j','k','l','m','n','o','p','q',
-                'r','s','t','u','v','w','x','y','z'] 
+    alphabet = ['0', '1', '2', '3', '4', '5', '6', '7', '8',
+                '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+                'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+                'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
     random.seed()
     out = ''
     for i in range(24):
@@ -15,16 +27,15 @@ def seed_generator():
         out += alphabet[index]
     return out
 
+
 class PwData:
 
-    def __init__(self, name, size, alg='sha256', seed=seed_generator(), alias_list=list()):
+    def __init__(self, name, size, alg='sha256', seed=seed_generator()):
         self.name = name
         self.size = size
         self.hash_alg = alg
         self.seed = seed
-        if type(alias_list) is not list:
-            raise(TypeError("Aliases must be formatted as a list"))
-        self.alias_list=alias_list
+        self.alias_list = list()
 
     def add_alias(self, alias):
         self.alias_list.append(alias)
@@ -43,18 +54,21 @@ class PwData:
 
         h.update(self.seed.encode())
         temp = h.hexdigest()
-        print(temp)
+        print("Printing the first {size} characters of hash for {name}"
+              .format(size=self.size, name=self.name))
         out = ''
         for i in range(self.size):
-            out += temp[i]  
+            out += temp[i]
 
         return out
 
+
 class HashWord(dict):
-    
+
     def populate(self):
         for file in os.listdir(PATH):
             filepath = PATH + file
+            # os.chmod(filepath, stat.S_ISDIR)
             with open(filepath, 'rb') as f:
                 item = pickle.load(f)
                 self[item.name] = item
@@ -62,34 +76,40 @@ class HashWord(dict):
     def save(self):
         for key in self:
             filepath = PATH + self[key].name
-            with open(filepath, mode='wb') as f:
+            with open(filepath, 'wb') as f:
                 pickle.dump(self[key], f)
-    
+
     def create(self):
         name = input("Enter a name for new passcode:\n")
-        size = int(input("What is the max character count for this password?\n"))
-        algo = input("Choose a hashing algorithm:\n\t1) sha256\n\t2) md5\n\t3) sha128\n\t4) blake2b\n")
-        seed = input("Choose a seed to create your password with or press Enter:\n").strip()
+        size = int(input("What is the max character" +
+                         "count for this password?\n"))
+        algo = input("Choose a hashing algorithm:\n\t1) sha256" +
+                     "\n\t2) md5\n\t3) sha128\n\t4) blake2b\n")
+        seed = input("Choose a seed to create your password" +
+                     "with or press Enter:\n").strip()
         match algo:
             case '2':
                 if size > 32:
                     size = 32
                 if len(seed) > 0:
-                    self[name] = PwData(name, size, seed=seed + '\n', alg='md5')
+                    self[name] = PwData(
+                        name, size, seed=seed + '\n', alg='md5')
                 else:
                     self[name] = PwData(name, size, alg='md5')
             case '3':
                 if size > 32:
                     size = 32
                 if len(seed) > 0:
-                    self[name] = PwData(name, size, seed=seed + '\n', alg='sha128')
+                    self[name] = PwData(
+                        name, size, seed=seed + '\n', alg='sha128')
                 else:
                     self[name] = PwData(name, size, alg='sha128')
             case '4':
                 if size > 64:
                     size = 64
                 if len(seed) > 0:
-                    self[name] = PwData(name, size, seed=seed + '\n', alg='blake2b')
+                    self[name] = PwData(
+                        name, size, seed=seed + '\n', alg='blake2b')
                 else:
                     self[name] = PwData(name, size, alg='blake2b')
             case _:
@@ -104,11 +124,17 @@ class HashWord(dict):
         count = 0
         for key in self:
             count += 1
-            print(count, "\t", key)
+            cstr = str(count) + ")\t" + key
+            print(cstr)
 
     def delete(self, name):
-        filepath = (PATH + name).strip()
-        os.unlink(filepath)
+        filepath = os.path.join(PATH, name)
+        try:
+            os.remove(filepath)
+        except OSError as e:
+            print(e, "Encountered deleting")
+        self.pop(name)
+
 
 if __name__ == "__main__":
     h = HashWord()
@@ -123,14 +149,53 @@ if __name__ == "__main__":
                 try:
                     if sys.argv[2] in h:
                         h.delete(sys.argv[2])
+                    else:
+                        for key in h:
+                            if sys.argv[2] in h[key].alias_list:
+                                h.delete(h[key])
+                                break
                 except Exception as e:
-                    print("Error ", e, " encountered deleting", sys.argv[2])
-                    print("Usage:\n\thashword add\n\thashword list\n\thashword <name of password>\n\thashword del <name of password>\n")
+                    print("Error {err} encountered deleting".format(err=e))
+                    print("Usage:\n\thashword add\n\thashword list" +
+                          "\n\thashword <name of password>" +
+                          "\n\thashword del <name of password>" +
+                          "\n\thashword alias <name of password> <alias>")
+            case 'alias':
+                try:
+                    if sys.argv[2] in h:
+                        h[sys.argv[2]].add_alias(sys.argv[3])
+                    else:
+                        for key in h:
+                            if sys.argv[2] in h[key].alias_list:
+                                h[key].add_alias(sys.argv[3])
+                                break
+                except Exception as e:
+                    print("Error {err} encountered deleting".format(err=e))
+                    print("Usage:\n\thashword add\n\thashword list" +
+                          "\n\thashword <name of password>" +
+                          "\n\thashword del <name of password>" +
+                          "\n\thashword alias <name of password> <alias>")
             case _:
+                inlist = False
                 if sys.argv[1] in h:
                     print(h[sys.argv[1]].getpw())
+                    inlist = True
                 else:
-                    print("Usage:\n\thashword add\n\thashword list\n\thashword <name of password>\n\thashword del <name of password>\n")
+                    for key in h:
+                        if sys.argv[1] in h[key].alias_list:
+                            print(h[key].getpw())
+                            inlist = True
+                            break
+                if not inlist:
+                    print("'{name}' not found in list.".format(
+                        name=sys.argv[1]))
     except Exception as e:
-        print("Error ", e, " encountered.\n\nUsage:\n\thashword add\n\thashword list\n\thashword <name of password>\n\thashword del <name of password>\n")
+        if e == IndexError:
+            print("Invalid argument.")
+        else:
+            print(e)
+        print("Usage:\n\thashword add\n\thashword list" +
+              "\n\thashword <name of password>" +
+              "\n\thashword del <name of password>" +
+              "\n\thashword alias <name of password> <alias>")
     h.save()
