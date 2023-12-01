@@ -127,7 +127,7 @@ class HashWord(dict):
             aliases = ''
             for item in self[key].alias_list:
                 aliases += (item + ' ')
-            cstr = str(count) + ")\t" + key + "\n\t\tAliases: " + aliases
+            cstr = str(count) + ")\t" + key + "\n\t-\taliases: " + aliases
             print(cstr)
 
     def delete(self, name):
