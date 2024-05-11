@@ -178,6 +178,12 @@ if __name__ == "__main__":
                           "\n\thashword <name of password>" +
                           "\n\thashword del <name of password>" +
                           "\n\thashword alias <name of password> <alias>")
+            case '--help':
+                print("'--help':\n\thashword add\n\thashword list" +
+                      "\n\thashword <name of password>" +
+                      "\n\thashword del <name of password>" +
+                      "\n\thashword alias <name of password> <alias>")
+
             case _:
                 inlist = False
                 if sys.argv[1] in h:
@@ -193,12 +199,5 @@ if __name__ == "__main__":
                     print("'{name}' not found in list.".format(
                         name=sys.argv[1]))
     except Exception as e:
-        if e == IndexError:
-            print("Invalid argument.")
-        else:
-            print(e)
-        print("Usage:\n\thashword add\n\thashword list" +
-              "\n\thashword <name of password>" +
-              "\n\thashword del <name of password>" +
-              "\n\thashword alias <name of password> <alias>")
+        print("Invalid argument. Input `hashword --help` to view usage information.")
     h.save()
