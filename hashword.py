@@ -1,16 +1,63 @@
 import getpass
-import hashlib
 import os
 import pickle
-import rsa
-import stat
-import sys
-import './pw_data.py'
+import hashlib
+import random
+
+
+def seed_generator():
+    alphabet = ['0', '1', '2', '3', '4', '5', '6', '7', '8',
+                '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+                'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+                'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    random.seed()
+    out = ''
+    for i in range(24):
+        index = random.randrange(36)
+        out += alphabet[index]
+    return out
+
+
+class PwData:
+
+    def __init__(self, name, size, alg='sha256', seed=seed_generator()):
+        self.name = name
+        self.size = size
+        self.hash_alg = alg
+        self.seed = seed
+        self.alias_list = list()
+
+    def add_alias(self, alias):
+        self.alias_list.append(alias)
+
+    def getpw(self):
+        h = None
+        match self.hash_alg:
+            case 'sha128':
+                h = hashlib.shake_256()
+            case 'blake2b':
+                h = hashlib.blake2b()
+            case 'md5':
+                h = hashlib.md5()
+            case _:
+                h = hashlib.sha256()
+
+        h.update(self.seed.encode())
+        temp = h.hexdigest()
+        print("Printing the first {size} characters of hash for {name}"
+              .format(size=self.size, name=self.name))
+        out = ''
+        for i in range(self.size):
+            out += temp[i]
+
+        return out
+
 
 USER = getpass.getuser().strip()
 PATH = "/home/" + USER + "/.hashword/Data/"
-    
+
 os.makedirs(PATH, exist_ok=True)
+
 
 class HashWord(dict):
 
@@ -18,6 +65,7 @@ class HashWord(dict):
         for file in os.listdir(PATH):
             filepath = PATH + file
             with open(filepath, 'rb') as f:
+
                 item = pickle.load(f)
                 self[item.name] = item
 
@@ -68,7 +116,7 @@ class HashWord(dict):
                 else:
                     self[name] = PwData(name, size)
 
-    def list(self):
+    def list_self(self):
         count = 0
         for key in self:
             count += 1
@@ -85,68 +133,3 @@ class HashWord(dict):
         except OSError as e:
             print(e, "Encountered deleting")
         self.pop(name)
-
-
-if __name__ == "__main__":
-    h = HashWord()
-    # TODO: only run populate if needed
-    h.populate()
-    try:
-        match sys.argv[1]:
-            case 'add':
-                h.create()
-            case 'list':
-                h.list()
-            case 'del':
-                try:
-                    if sys.argv[2] in h:
-                        h.delete(sys.argv[2])
-                    else:
-                        for key in h:
-                            if sys.argv[2] in h[key].alias_list:
-                                h.delete(h[key])
-                                break
-                except Exception as e:
-                    print("Error {err} encountered deleting".format(err=e))
-                    print("Usage:\n\thashword add\n\thashword list" +
-                          "\n\thashword <name of password>" +
-                          "\n\thashword del <name of password>" +
-                          "\n\thashword alias <name of password> <alias>")
-            case 'alias':
-                try:
-                    if sys.argv[2] in h:
-                        h[sys.argv[2]].add_alias(sys.argv[3])
-                    else:
-                        for key in h:
-                            if sys.argv[2] in h[key].alias_list:
-                                h[key].add_alias(sys.argv[3])
-                                break
-                except Exception as e:
-                    print("Error {err} encountered deleting".format(err=e))
-                    print("Usage:\n\thashword add\n\thashword list" +
-                          "\n\thashword <name of password>" +
-                          "\n\thashword del <name of password>" +
-                          "\n\thashword alias <name of password> <alias>")
-            case '--help':
-                print("'--help':\n\thashword add\n\thashword list" +
-                      "\n\thashword <name of password>" +
-                      "\n\thashword del <name of password>" +
-                      "\n\thashword alias <name of password> <alias>")
-
-            case _:
-                inlist = False
-                if sys.argv[1] in h:
-                    print(h[sys.argv[1]].getpw())
-                    inlist = True
-                else:
-                    for key in h:
-                        if sys.argv[1] in h[key].alias_list:
-                            print(h[key].getpw())
-                            inlist = True
-                            break
-                if not inlist:
-                    print("'{name}' not found in list.".format(
-                        name=sys.argv[1]))
-    except Exception as e:
-        print("Invalid argument. Input `hashword --help` to view usage information.")
-    h.save()
