@@ -38,15 +38,27 @@ def display_help():
             print(help.NO_ENTRY)
 
 
+def execute_add():
+    name = input("Enter a name for new passcode:\n")
+    size = int(input("What is the max character" +
+                     "count for this password?\n"))
+    algo = input("Choose a hashing algorithm:\n\t1) sha256" +
+                 "\n\t2) md5\n\t3) sha-3\n\t4) blake2b\n")
+    seed = input("Choose a seed to create your password" +
+                 "with or press Enter:\n").strip()
+    h.create(name, size, algo, seed)
+
+
 if __name__ == "__main__":
 
     h = hword()
-    # TODO: only run populate if needed
-    h.populate()
     try:
         match sys.argv[1]:
             case 'add':
-                h.create()
+                try:
+                    execute_add()
+                except Exception as e:
+                    print("Error {err} adding new password".format(err=e))
             case 'alias':
                 try:
                     if sys.argv[2] in h:

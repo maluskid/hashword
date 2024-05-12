@@ -1,22 +1,28 @@
+from cryptography.fernet import Fernet
+import base64
 import getpass
 import hashlib
 import os
 import pickle
 import random
 import rsa
+import stat
 
 
 def seed_generator():
-    alphabet = ['0', '1', '2', '3', '4', '5', '6', '7', '8',
-                '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-                'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
-                'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    alphabet = ['A', 'B', 'C', 'D', 'E', 'F', '/', 'G', 'H', 'I', 'J',
+                'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+                'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+                'g', 'h', 'i', '=', 'j', 'k', 'l', '+', 'm', 'n', 'o',
+                'p', 'q', 'r', 's', 't', 'u', '-', 'v', 'w', 'x', 'y',
+                'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
     random.seed()
-    out = ''
-    for i in range(24):
-        index = random.randrange(36)
-        out += alphabet[index]
-    return out
+    rstring = ''
+    length = random.randrange(24, 32)
+    for i in range(length):
+        index = random.randrange(66)
+        rstring += alphabet[index]
+    return base64.encodebytes(rstring.encode()).decode()
 
 
 class PwData:
@@ -54,36 +60,48 @@ class PwData:
         return out
 
 
-USER = getpass.getuser().strip()
-PATH = "/home/" + USER + "/.hashword/Data/"
-os.makedirs(PATH, exist_ok=True)
+user = getpass.getuser().strip()
+PATH = os.path.join('home', user, '.hashword/')
+os.makedirs(os.path.join(PATH, 'Keys/'), exist_ok=True)
+os.makedirs(os.path.join(PATH, 'Data/'), exist_ok=True)
+# if os.stat(os.path.join(PATH, 'Data/', 'alias.json'))
 
 
 class HashWord(dict):
 
     def populate(self):
-        for file in os.listdir(PATH):
-            filepath = PATH + file
-            with open(filepath, 'rb') as f:
+        # loads every saved password in one go
+        dirpath = os.path.join(PATH, 'Data/')
+        for file in os.listdir(dirpath):
+            if not file.endswith('.json', '.bak'):
+                filepath = os.path.join(dirpath, file)
+                with open(filepath, 'rb') as f:
+                    item = pickle.load(f)
+                    self[item.name] = item
 
-                item = pickle.load(f)
-                self[item.name] = item
+    def load(self, name):
+        # loads a specific password
+        filepath = os.path.join(PATH, 'Data/', name)
+        with open(filepath, 'rb') as f:
+            item = pickle.load(f)
+            self[item.name] = item
 
     def save(self):
+        dirpath = os.path.join(PATH, 'Data/')
         for key in self:
-            filepath = PATH + self[key].name
+            filepath = os.path.join(dirpath, self[key].name)
             with open(filepath, 'wb') as f:
                 pickle.dump(self[key], f)
 
-    def create(self):
-        name = input("Enter a name for new passcode:\n")
-        size = int(input("What is the max character" +
-                         "count for this password?\n"))
-        algo = input("Choose a hashing algorithm:\n\t1) sha256" +
-                     "\n\t2) md5\n\t3) sha-3\n\t4) blake2b\n")
-        seed = input("Choose a seed to create your password" +
-                     "with or press Enter:\n").strip()
+    def create(self, name, size, algo, seed):
         match algo:
+            case '1':
+                if size > 64:
+                    size = 64
+                if len(seed) > 0:
+                    self[name] = PwData(name, size, seed=seed + '\n')
+                else:
+                    self[name] = PwData(name, size)
             case '2':
                 if size > 32:
                     size = 32
@@ -109,6 +127,8 @@ class HashWord(dict):
                 else:
                     self[name] = PwData(name, size, alg='blake2b')
             case _:
+                print("Algorithm selection not recognized." +
+                      "Defaulting to sha256\n.")
                 if size > 64:
                     size = 64
                 if len(seed) > 0:
@@ -126,8 +146,9 @@ class HashWord(dict):
             cstr = str(count) + ")\t" + key + "\n\t- aliases: " + aliases
             print(cstr)
 
-    def delete(self, name):
-        filepath = os.path.join(PATH, name)
+    def delete(self, arg):
+        for file in
+        filepath = os.path.join(PATH, "Data/", name)
         try:
             os.remove(filepath)
         except OSError as e:
