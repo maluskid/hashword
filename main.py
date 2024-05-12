@@ -1,7 +1,42 @@
-# import rsa
-import sys
 from hashword import HashWord as hword
-from hashword import PwData
+import helptext as help
+import rsa
+import sys
+
+
+def print_usage(addendum=False):
+    print(help.USAGE)
+    if addendum:
+        print("\tFor help with a specific command, " +
+              "run `hashword --help <command>`\n\t" +
+              "For more in depth help in general, run " +
+              "`hashword --help all`\n")
+
+
+def display_help():
+    match len(sys.argv):
+        case 2:
+            print("hashword <command>")
+            print_usage(addendum=True)
+        case 3:
+            match sys.argv[2]:
+                case 'add':
+                    print(help.ADD_TEXT)
+                case 'all':
+                    print(help.MAIN_TEXT)
+                case 'alias':
+                    print(help.ALIAS_TEXT)
+                case 'list':
+                    print(help.LIST_TEXT)
+                case 'rm':
+                    print(help.RM_TEXT)
+                case 'rsa':
+                    print(help.RSA_TEXT)
+                case _:
+                    print(help.NO_ENTRY)
+        case _:
+            print(help.NO_ENTRY)
+
 
 if __name__ == "__main__":
 
@@ -12,23 +47,6 @@ if __name__ == "__main__":
         match sys.argv[1]:
             case 'add':
                 h.create()
-            case 'list':
-                h.list_self()
-            case 'del':
-                try:
-                    if sys.argv[2] in h:
-                        h.delete(sys.argv[2])
-                    else:
-                        for key in h:
-                            if sys.argv[2] in h[key].alias_list:
-                                h.delete(h[key])
-                                break
-                except Exception as e:
-                    print("Error {err} encountered deleting".format(err=e))
-                    print("Usage:\n\thashword add\n\thashword list" +
-                          "\n\thashword <name of password>" +
-                          "\n\thashword del <name of password>" +
-                          "\n\thashword alias <name of password> <alias>")
             case 'alias':
                 try:
                     if sys.argv[2] in h:
@@ -40,16 +58,29 @@ if __name__ == "__main__":
                                 break
                 except Exception as e:
                     print("Error {err} encountered deleting".format(err=e))
-                    print("Usage:\n\thashword add\n\thashword list" +
-                          "\n\thashword <name of password>" +
-                          "\n\thashword del <name of password>" +
-                          "\n\thashword alias <name of password> <alias>")
+                    print_usage()
+            case 'list':
+                h.list_self()
+            case 'rm':
+                try:
+                    if sys.argv[2] in h:
+                        h.delete(sys.argv[2])
+                    else:
+                        for key in h:
+                            if sys.argv[2] in h[key].alias_list:
+                                h.delete(h[key])
+                                break
+                except Exception as e:
+                    print("Error {err} encountered deleting".format(err=e))
+                    print_usage()
+            case 'rsa':
+                try:
+                    pass
+                except Exception as e:
+                    print("Error {err} encountered during rsa generation"
+                          .format(err=e))
             case '--help':
-                print("'--help':\n\thashword add\n\thashword list" +
-                      "\n\thashword <name of password>" +
-                      "\n\thashword del <name of password>" +
-                      "\n\thashword alias <name of password> <alias>")
-
+                display_help()
             case _:
                 inlist = False
                 if sys.argv[1] in h:

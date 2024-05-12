@@ -1,8 +1,9 @@
 import getpass
+import hashlib
 import os
 import pickle
-import hashlib
 import random
+import rsa
 
 
 def seed_generator():
@@ -33,7 +34,7 @@ class PwData:
     def getpw(self):
         h = None
         match self.hash_alg:
-            case 'sha128':
+            case 'sha-3':
                 h = hashlib.shake_256()
             case 'blake2b':
                 h = hashlib.blake2b()
@@ -55,7 +56,6 @@ class PwData:
 
 USER = getpass.getuser().strip()
 PATH = "/home/" + USER + "/.hashword/Data/"
-
 os.makedirs(PATH, exist_ok=True)
 
 
@@ -80,7 +80,7 @@ class HashWord(dict):
         size = int(input("What is the max character" +
                          "count for this password?\n"))
         algo = input("Choose a hashing algorithm:\n\t1) sha256" +
-                     "\n\t2) md5\n\t3) sha128\n\t4) blake2b\n")
+                     "\n\t2) md5\n\t3) sha-3\n\t4) blake2b\n")
         seed = input("Choose a seed to create your password" +
                      "with or press Enter:\n").strip()
         match algo:
@@ -97,9 +97,9 @@ class HashWord(dict):
                     size = 32
                 if len(seed) > 0:
                     self[name] = PwData(
-                        name, size, seed=seed + '\n', alg='sha128')
+                        name, size, seed=seed + '\n', alg='sha-3')
                 else:
-                    self[name] = PwData(name, size, alg='sha128')
+                    self[name] = PwData(name, size, alg='sha-3')
             case '4':
                 if size > 64:
                     size = 64
