@@ -77,7 +77,7 @@ if __name__ == "__main__":
                 help.print_error(e)
             name = optslist["name"]
             print("Hashword {n} successfully added."
-                  .format_map(n=name))
+                  .format(n=name))
         case "alias":
             try:
                 h.alias(argslist[1], argslist[2])
