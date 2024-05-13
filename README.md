@@ -6,11 +6,10 @@ Added modular filesystem and converting to packaged binary via PyInstaller. Use 
 
 #### WIP
 
-Adding RSA key encryption for stored datafiles
+- Adding RSA key encryption for stored datafiles
+- Add methods to review creation parameters for hashword files
+- Alternatively add methods for exporting encrypted files
 
-Updates!!
-- new OSU password soon
-- citibank pin added on desktop
 
 Usage:
     `hashword add
