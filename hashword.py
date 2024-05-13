@@ -278,4 +278,7 @@ class HashWord(dict):
             if val not in self.keys():
                 print(val, manifest, "audit case1")
                 manifest.audit(val)
+        for key in self:
+            if key not in manifest.passwords:
+                manifest.add_pw(key)
         manifest.close()
