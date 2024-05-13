@@ -70,3 +70,43 @@ RSA_TEXT = "\tUsage: hashword rsa\n" \
     "\n\tprogram, supply your public key. When prompted, supply the path to" \
     "\n\tyour private key. You can store this path with Haswhord, but be" \
     "\n\twary that this constitues a security risk.\n"
+
+ERROR_MSG = "Error: {err} Use `hashword --help` for more information."
+
+
+def print_error(error):
+    print(ERROR_MSG.format(err=error))
+
+
+def print_usage(addendum=False):
+    print(USAGE)
+    if addendum:
+        print("\tFor help with a specific command, "
+              + "run `hashword --help <command>`\n\t"
+              + "For more in depth help in general, run "
+              + "`hashword --help all`\n")
+
+
+def display_help(args):
+    match len(args):
+        case 1:
+            print("hashword <command>")
+            print_usage(addendum=True)
+        case 2:
+            match args[2]:
+                case "add":
+                    print(ADD_TEXT)
+                case "all":
+                    print(MAIN_TEXT)
+                case "alias":
+                    print(ALIAS_TEXT)
+                case "list":
+                    print(LIST_TEXT)
+                case "rm":
+                    print(RM_TEXT)
+                case "rsa":
+                    print(RSA_TEXT)
+                case _:
+                    print(NO_ENTRY)
+        case _:
+            print(NO_ENTRY)

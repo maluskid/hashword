@@ -1,56 +1,19 @@
-import random
-import base64
-from hashword import seed_generator, HashWord as hword
+from hashword import HashWord as hword
 import helptext as help
 import rsa
 import sys
 
 
-def print_usage(addendum=False):
-    print(help.USAGE)
-    if addendum:
-        print(
-            "\tFor help with a specific command, "
-            + "run `hashword --help <command>`\n\t"
-            + "For more in depth help in general, run "
-            + "`hashword --help all`\n"
-        )
-
-
-def display_help():
-    match len(sys.argv):
-        case 2:
-            print("hashword <command>")
-            print_usage(addendum=True)
-        case 3:
-            match sys.argv[2]:
-                case "add":
-                    print(help.ADD_TEXT)
-                case "all":
-                    print(help.MAIN_TEXT)
-                case "alias":
-                    print(help.ALIAS_TEXT)
-                case "list":
-                    print(help.LIST_TEXT)
-                case "rm":
-                    print(help.RM_TEXT)
-                case "rsa":
-                    print(help.RSA_TEXT)
-                case _:
-                    print(help.NO_ENTRY)
-        case _:
-            print(help.NO_ENTRY)
-
-
 def execute_add(options):
+
     match options:
         case {"name": opt_name} if not opt_name:
             raise (ValueError("No name provided for new password.\n"))
-        case {"name": name,
-              "size": size,
-              "algo": algo,
-              "seed": seed}:
-            h.create(name, size, algo, seed)
+        case {"algo": algo,
+              "name": name,
+              "seed": seed,
+              "size": size}:
+            h.create(algo, name, seed, size)
         case _:
             raise (Exception("An unforseen circumstance has arisen"))
 
@@ -58,58 +21,47 @@ def execute_add(options):
 def parse_args():
     argslist = []
     options = {
-        "name": None,
-        "size": None,
         "algo": None,
+        "name": None,
         "seed": None,
+        "size": None,
     }
     try:
         match sys.argv:
             case [_, "add", *opts]:
                 argslist.append("add")
-                # *_ used instead of *rest to keep linter from arguing
-                # should match situations where the pattern exists even
-                # if the list is longer than two elements.
-                match opts:
-                    case [("-n" | "--name"), value, *_]:
-                        if not options["name"]:
-                            options["name"] = value
-                        else:
-                            raise (ValueError("Duplicate opts found."))
-                    case [("-S" | "--seed"), value, *_]:
-                        if not options["seed"]:
-                            options["seed"] = value
-                        else:
-                            raise (ValueError("Duplicate opts found."))
-                    case [("-s" | "--size"), value, *_]:
-                        if not options["size"]:
-                            options["size"] = value
-                        else:
-                            raise (ValueError("Duplicate opts found."))
-                    case [("-a" | "--algorithm"),
-                          ("md5" | "sha256" | "sha-3" | "blake2b") as value,
-                          *_]:
-                        if not options["algo"]:
-                            options["algo"] = value
-                        else:
-                            raise (ValueError("Duplicate opts found."))
-                    case [("-a" | "--algorithm"), _]:
-                        raise (ValueError("Invalid algorithm supplied."))
-                    case []:
-                        pass
-            case [_, *args]:
+                match len(opts):
+                    case val if val % 2 == 0:
+                        raise (ValueError("Incorrect argument format."))
+                    case val if val % 2 == 1:
+                        options["name"] = opts.pop()
+                        while opts:
+                            match [opts.pop(0), opts.pop(0)]:
+                                case [('-a' | '--algorithm'), value]:
+                                    options["algo"] = value
+                                case [('-S' | '--seed'), value]:
+                                    options["seed"] = value
+                                case [('-s' | '--size'), value]:
+                                    options["size"] = int(value)
+                                case [first, second]:
+                                    errormsg = "Option {f} {s} not recognized."
+                                    errormsg.format(f=first, s=second)
+                                    raise (ValueError(errormsg))
+            case [_, *args] if len(args) < 1:
+                raise (RuntimeError("No arguments detected."))
+            case [_, *args] if len(args) >= 1:
                 for arg in args:
                     argslist.append(arg)
             case _:
-                raise (ValueError("No arguments detected."))
+                raise (Exception("Something unexpected ocurred."))
+    except ValueError as e:
+        help.print_error(e)
+    except RuntimeError as e:
+        help.print_error(e)
+        help.print_usage(addendum=True)
+        sys.exit(0)
     except Exception as e:
-        if e == ValueError:
-            print("Error: {err} Arguments for `hashword add` not recognised. \
-            Use `hashword --help add` to view syntax information."
-                  .format(err=e))
-        else:
-            print("Error: {err} Use `hashword --help` to view usage\
-             information.".format(err=e))
+        help.print_error(e)
 
     return [argslist, options]
 
@@ -117,54 +69,47 @@ def parse_args():
 if __name__ == "__main__":
     h = hword()
     [argslist, optslist] = parse_args()
-
     match argslist[0]:
         case "add":
             try:
-                execute_add(argslist)
+                execute_add(optslist)
             except Exception as e:
-                print("Error {err} adding new password".format(err=e))
+                help.print_error(e)
+            name = optslist["name"]
+            print("Hashword {n} successfully added."
+                  .format_map(n=name))
         case "alias":
             try:
-                if sys.argv[2] in h:
-                    h[sys.argv[2]].add_alias(sys.argv[3])
-                else:
-                    for key in h:
-                        if sys.argv[2] in h[key].alias_list:
-                            h[key].add_alias(sys.argv[3])
-                            break
+                h.alias(argslist[1], argslist[2])
             except Exception as e:
-                print("Error {err} encountered deleting".format(err=e))
-                print_usage()
+                help.print_error(e)
+                help.print_usage()
         case "list":
             h.list_self()
         case "rm":
             try:
                 h.delete(argslist[1])
             except Exception as e:
-                print("Error {err} encountered deleting".format(err=e))
-                print_usage()
+                help.print_error(e)
+                help.print_usage()
         case "rsa":
             try:
                 # TODO
                 pass
             except Exception as e:
-                print("Error {err} encountered during rsa generation"
-                      .format(err=e))
+                help.print_error(e)
         case "--help":
-            display_help()
-        case _:
+            help.display_help(argslist)
+        case 'audit':
+            print("Beginning audit...")
+            h.audit()
+            print("Audit complete!")
+            h.list_self()
+        case arg:
             try:
-                h.get(argslist[0])
-            except Exception:
-                match Exception:
-                    case KeyError() as e:
-                        print("Error {err} encountered looking for {item} in \
-                        manifest.".format(err=e, item=argslist[0]))
-                    case _ as e:
-                        print("Error {err} encountered deleting {item}"
-                              .format(err=e, item=argslist[0]))
-
-                print("'{name}' not found in list.".format(name=sys.argv[1]))
-
-h.save()
+                target = h.get(arg)
+                print(target.getpw())
+            except KeyError as e:
+                help.print_error(e)
+            except Exception as e:
+                help.print_error(e)
