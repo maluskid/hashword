@@ -1,2 +1,5 @@
+build
+dist
+hashword.spec
 __pycache__
 test-keys
