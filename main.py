@@ -1,6 +1,4 @@
-from hashword import HashWord as hword
-import helptext as help
-import rsa
+import hashword as hword
 import sys
 
 
@@ -13,7 +11,7 @@ def execute_add(options):
               "name": name,
               "seed": seed,
               "size": size}:
-            h.create(algo, name, seed, size)
+            return (algo, name, seed, size)
         case _:
             raise (Exception("An unforseen circumstance has arisen"))
 
@@ -67,14 +65,15 @@ def parse_args():
 
 
 if __name__ == "__main__":
-    h = hword()
+    h = hword.HashWord()
     [argslist, optslist] = parse_args()
     match argslist[0]:
         case "add":
             try:
-                execute_add(optslist)
+                [algo, name, seed, size] = execute_add(optslist)
+                h.create(algo, name, seed, size)
             except Exception as e:
-                help.print_error(e)
+                hword.help.print_error(e)
             name = optslist["name"]
             print("Hashword {n} successfully added."
                   .format(n=name))
@@ -82,22 +81,22 @@ if __name__ == "__main__":
             try:
                 h.alias(argslist[1], argslist[2])
             except Exception as e:
-                help.print_error(e)
-                help.print_usage()
+                hword.help.print_error(e)
+                hword.help.print_usage()
         case "list":
             h.list_self()
         case "rm":
             try:
                 h.delete(argslist[1])
             except Exception as e:
-                help.print_error(e)
-                help.print_usage()
+                hword.help.print_error(e)
+                hword.help.print_usage()
         case "rsa":
             try:
                 # TODO
                 pass
             except Exception as e:
-                help.print_error(e)
+                hword.help.print_error(e)
         case "--help":
             help.display_help(argslist)
         case 'audit':
@@ -110,6 +109,6 @@ if __name__ == "__main__":
                 target = h.get(arg)
                 print(target.getpw())
             except KeyError as e:
-                help.print_error(e)
+                hword.help.print_error(e)
             except Exception as e:
-                help.print_error(e)
+                hword.help.print_error(e)

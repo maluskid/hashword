@@ -1,6 +1,7 @@
-# Most of the longer text outputs for the help functionality is stored here
+# Most of the text output for the various functions in hashword is stored here
 # to reduce clutter and make consistent formatting easier.
 
+# Important help text below ---------------------------------------------------
 USAGE = "Usage:\n\thashword <foo>\t\t\tshow hash for <foo>" \
     "\n\thashword add\t\t\tadd new password" \
     "\n\thashword alias <foo> <alias>\talias <foo> as <alias>" \
@@ -28,6 +29,7 @@ MAIN_TEXT = "\tUsage: hashword <foo>\n" \
     "\n\tGnome Terminal  - <ctrl-shift-c>" \
     "\n\tMac Terminal - <cmd-c>\n"
 
+# Help entries in alphabetical order below ------------------------------------
 ADD_TEXT = "\tUsage: hashword add\n" \
     "\n\tThis command will begin a step by step process in the terminal to" \
     "\n\tadd a new password to the keyring. Multiple hashing algorithms are" \
@@ -71,9 +73,28 @@ RSA_TEXT = "\tUsage: hashword rsa\n" \
     "\n\tyour private key. You can store this path with Haswhord, but be" \
     "\n\twary that this constitues a security risk.\n"
 
+# RSA Encryption setup messages below _________________________________________
+RSA_SETUP0 = "\tRSA Encryption setup:" \
+    "\n\tHashword will create a private and public RSA key for you. The" \
+    "\n\tpublic key will be stored in the `.hashword/Keys` directory. The" \
+    "\n\tprivate key will be provided and up to you to store wherever you" \
+    "\n\tlike. This private key will need to be provided to access your" \
+    "\n\tpasswords once encryption has been set up. Keep this key in a safe" \
+    "\n\tplace and do not lose it."
+
+
+# Warning & error messages below ----------------------------------------------
+WARN_KEYS = "\n\tWARN: Using this program without encryption exposes your" \
+    "\n\tsaved passwords to possible theft. If this is your first time using" \
+    "\n\tthis program, use `hashword rsa` to set up encryption."
+
+WARN_MANIFEST = "\n\tWARN: manifest.json is empty, you may need to restore" \
+    "\n\tit. Use the `audit` command to fix a broken manifest."
+
 ERROR_MSG = "Error: {err} Use `hashword --help` for more information."
 
 
+# Helper functions for printing various important messages below --------------
 def print_error(error):
     print(ERROR_MSG.format(err=error))
 
