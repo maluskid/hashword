@@ -2,12 +2,11 @@ Hashword
 ============
 
 Hashword, a program to help you hash passwords with seeds, and keep track of them. Stored passwords are not encrypted, so be careful.
-
-#### WIP
-
-- Adding RSA key encryption for stored datafiles
-- Add methods to review creation parameters for hashword files
-- Alternatively add methods for exporting encrypted files
+Installing the module so the `main.py` script will run properly. Execute the following in the hashword directory:
+`pip install --upgrade build`
+`python3 -m build`
+`pip install ./dist/hashword-0.0.2.tar.gz`
+Then copy main.py into any bin directory and make sure it has execute permissions. Name it "hashword" and voila.
 
 Usage:
     `hashword add
