@@ -1,6 +1,6 @@
 from hashword import HashWord as hword
 import helptext as help
-import rsa
+# import rsa
 import sys
 
 
