@@ -1,6 +1,5 @@
 build
 dist
-hashword.spec
 __pycache__
 hashword/__pycache__
 test-keys
