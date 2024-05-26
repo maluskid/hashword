@@ -87,7 +87,7 @@ class HashWord(dict):
             helptext.print_error(e)
         else:
             self.load(name)
-            return (self[name])
+            return (self[name].getpw())
 
     def load(self, name):
         # loads a specific password

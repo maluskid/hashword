@@ -1,6 +1,9 @@
 #! /bin/python3
 import sys
-import hashword as hword
+from hashword import HashWord as hword
+from hashword import print_error as perror
+from hashword import print_usage as pusage
+from hashword import display_help as phelp
 
 
 def execute_add(options):
@@ -54,19 +57,19 @@ def parse_args():
             case _:
                 raise (Exception("Something unexpected ocurred."))
     except ValueError as e:
-        hword.print_error(e)
+        perror(e)
     except RuntimeError as e:
-        hword.print_error(e)
-        hword.print_usage(addendum=True)
+        perror(e)
+        pusage(addendum=True)
         sys.exit(0)
     except Exception as e:
-        hword.print_error(e)
+        perror(e)
 
     return [argslist, options]
 
 
 if __name__ == "__main__":
-    h = hword.HashWord()
+    h = hword()
     [argslist, optslist] = parse_args()
     match argslist[0]:
         case "add":
@@ -74,7 +77,7 @@ if __name__ == "__main__":
                 [algo, name, seed, size] = execute_add(optslist)
                 h.create(algo, name, seed, size)
             except Exception as e:
-                hword.print_error(e)
+                perror(e)
             name = optslist["name"]
             print("Hashword {n} successfully added."
                   .format(n=name))
@@ -82,24 +85,24 @@ if __name__ == "__main__":
             try:
                 h.alias(argslist[1], argslist[2])
             except Exception as e:
-                hword.print_error(e)
-                hword.print_usage()
+                perror(e)
+                pusage()
         case "list":
             h.list_self()
         case "rm":
             try:
                 h.delete(argslist[1])
             except Exception as e:
-                hword.print_error(e)
-                hword.print_usage()
+                perror(e)
+                pusage()
         case "rsa":
             try:
                 # TODO
                 pass
             except Exception as e:
-                hword.print_error(e)
+                perror(e)
         case "--help":
-            help.display_help(argslist)
+            phelp(argslist)
         case 'audit':
             print("Beginning audit...")
             h.audit()
@@ -107,9 +110,6 @@ if __name__ == "__main__":
             h.list_self()
         case arg:
             try:
-                target = h.get(arg)
-                print(target.getpw())
-            except KeyError as e:
-                hword.print_error(e)
+                print(h.get(arg))
             except Exception as e:
-                hword.print_error(e)
+                perror(e)
