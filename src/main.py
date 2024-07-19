@@ -101,6 +101,12 @@ if __name__ == "__main__":
                 pass
             except Exception as e:
                 perror(e)
+        case "data":
+            try:
+                print("Password data saved at {location}".format(
+                    location=h.showpath()))
+            except Exception as e:
+                perror(e)
         case "--help":
             argslist.pop(0)
             phelp(argslist)

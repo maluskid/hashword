@@ -96,6 +96,9 @@ class HashWord(dict):
             item = pickle.load(f)
             self[item.name] = item
 
+    def showpath(self):
+        return self.p.DATA_PATH
+
     def populate(self):
         # loads every saved password in one go
         for file in os.listdir(self.p.DATA_PATH):
