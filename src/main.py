@@ -102,6 +102,7 @@ if __name__ == "__main__":
             except Exception as e:
                 perror(e)
         case "--help":
+            argslist.pop(0)
             phelp(argslist)
         case 'audit':
             print("Beginning audit...")

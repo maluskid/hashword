@@ -110,11 +110,11 @@ def print_usage(addendum=False):
 
 def display_help(args):
     match len(args):
-        case 1:
+        case 0:
             print("hashword <command>")
             print_usage(addendum=True)
-        case 2:
-            match args[2]:
+        case 1:
+            match args[0]:
                 case "add":
                     print(ADD_TEXT)
                 case "all":
