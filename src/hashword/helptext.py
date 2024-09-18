@@ -5,6 +5,7 @@
 USAGE = "Usage:\n\thashword <foo>\t\t\tshow hash for <foo>" \
     "\n\thashword add\t\t\tadd new password" \
     "\n\thashword alias <foo> <alias>\talias <foo> as <alias>" \
+    "\n\thashword audit\t\t\taudits saved aliases and passwords" \
     "\n\thashword data\t\t\tshow path to `/.hashword/data`" \
     "\n\thashword list\t\t\tlist saved passwords" \
     "\n\thashword rm <foo>\t\tremove <foo>" \
@@ -52,6 +53,20 @@ ALIAS_TEXT = "\tUsage: hashword alias <foo> <alias>\n" \
     "\n\t<alias> the same as though it were entered using <foo>. You can" \
     "\n\tview all aliases with the `list` command.\n"
 
+AUDIT_TEXT = "\tUsage: hashword audit\n" \
+    "\n\tThis command will perform an audit of the saved `manifest.json` and" \
+    "\n\tall saved passwords. Use this command if an old password isn't" \
+    "\n\trecognized after a fresh installation. Aliases previously assigned" \
+    "\n\tto an old password entry will be lost and must be reassigned. If a" \
+    "\n\tpassword file has been removed without the use of the `rm` command," \
+    "\n\tthis command will fix the broken manifest.\n"
+
+DATA_TEXT = "\tUsage: hashword data\n" \
+    "\n\tThis command will display path to the data directory where all" \
+    "\n\tpassword data is stored. If RSA encryption hasn't been set up," \
+    "\n\tthese files are incredibly easy to gain information from. For" \
+    "\n\tyour data safety, using RSA encryption is highly recommended.\n"
+
 LIST_TEXT = "\tUsage: hashword list\n" \
     "\n\tThis command displays all saved passwords as well as any aliases" \
     "\n\tassigned to them.\n"
@@ -69,9 +84,11 @@ RSA_TEXT = "\tUsage: hashword rsa\n" \
     "\n\tin the terminal to complete first time setup or manage RSA keys." \
     "\n\tPasswords are encrypted using your public key. In order to decrypt" \
     "\n\tthem, you must supply your private key. The first time you use this" \
-    "\n\tprogram, supply your public key. When prompted, supply the path to" \
-    "\n\tyour private key. You can store this path with Haswhord, but be" \
-    "\n\twary that this constitues a security risk.\n"
+    "\n\tprogram, you will be guided through RSA key setup. When prompted," \
+    "\n\tsupply the path to your private key to decrypt your passwords.\n\n" \
+    "\n\tFlags:" \
+    "\n\t\t-v, --verbose\t\tdisplay rsa public and private key in STDOUT." \
+    "\n\t\t-f --force\t\tforce RSA setup to overwrite a previously saved key."
 
 # RSA Encryption setup messages below _________________________________________
 RSA_SETUP0 = "\tRSA Encryption setup:" \
@@ -80,18 +97,26 @@ RSA_SETUP0 = "\tRSA Encryption setup:" \
     "\n\tprivate key will be provided and up to you to store wherever you" \
     "\n\tlike. This private key will need to be provided to access your" \
     "\n\tpasswords once encryption has been set up. Keep this key in a safe" \
-    "\n\tplace and do not lose it."
+    "\n\tplace and do not lose it.\n"
 
+RSA_SETUP1 = "\tRSA Encryption setup:" \
+    "\n\tEncryption setup is complete. Your private and public keys have" \
+    "\n\tbeen saved in the current working directory.\n"
 
 # Warning & error messages below ----------------------------------------------
 WARN_KEYS = "\n\tWARN: Using this program without encryption exposes your" \
     "\n\tsaved passwords to possible theft. If this is your first time using" \
-    "\n\tthis program, use `hashword rsa` to set up encryption."
+    "\n\tthis program, use `hashword rsa` to set up encryption.\n"
 
 WARN_MANIFEST = "\n\tWARN: manifest.json is empty, you may need to restore" \
-    "\n\tit. Use the `audit` command to fix a broken manifest."
+    "\n\tit. Use the `audit` command to fix a broken manifest.\n"
 
-ERROR_MSG = "Error: {err} Use `hashword --help` for more information."
+WARN_RSA_OVERWRITE = "\n\tWARN: Rsa encryption has already been set up and" \
+    "\n\ta previously saved encryption key exists. If this key is deleted" \
+    "\n\tit may make any encrypted passwords irretrievable. Use the `-f`" \
+    "\n\tflag to force the setup function to overwrite the old key.\n"
+
+ERROR_MSG = "Error: {err} Use `hashword --help` for more information.\n"
 
 
 # Helper functions for printing various important messages below --------------
@@ -121,12 +146,16 @@ def display_help(args):
                     print(MAIN_TEXT)
                 case "alias":
                     print(ALIAS_TEXT)
+                case "audit":
+                    print(AUDIT_TEXT)
                 case "list":
                     print(LIST_TEXT)
                 case "rm":
                     print(RM_TEXT)
                 case "rsa":
                     print(RSA_TEXT)
+                case "data":
+                    print(DATA_TEXT)
                 case _:
                     print(NO_ENTRY)
         case _:

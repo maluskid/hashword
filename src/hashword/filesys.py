@@ -18,5 +18,8 @@ class FileSys:
             os.makedirs(os.path.join(self.KEY_PATH))
         if not os.path.exists(self.M_PATH):
             with open(self.M_PATH, 'x'):
-                print("`manifest.json` not found, starting fresh. Use the" +
-                      +" `audit` command to help fix a broken manifest.")
+                print("""
+                `manifest.json` not found, starting fresh. Use the `audit`
+                command to help fix a broken manifest. If this is the first
+                time you've used hashword, you can ignore this message.'
+                """)

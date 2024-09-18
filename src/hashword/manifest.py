@@ -10,14 +10,17 @@ class Manifest():
         self.p = FileSys()
         self.passwords = list()
         self.aliases = dict()
+        self.encrypted = False
         if os.path.getsize(self.p.M_PATH) > 0:
             with open(self.p.M_PATH, 'r+') as m:
                 try:
                     savedm = json.load(m)
                     self.aliases.update(savedm["aliases"])
                     self.passwords = savedm["passwords"].copy()
+                    self.encrypted = savedm["encrypted"]
                 except json.JSONDecodeError as e:
-                    helptext.print_error(e)
+                    print("Error: {err} encountered decoding manifest.json"
+                          .format(err=e))
         elif os.path.getsize(self.p.DATA_PATH) > 5:
             # If DATA_PATH is empty or nearly empty, it is likely there are no
             # saved passwords and the warning is unneccessary
@@ -26,6 +29,7 @@ class Manifest():
     def close(self):
         with open(self.p.M_PATH, 'w+') as m:
             msaver = {
+                "encrypted": self.encrypted,
                 "passwords": self.passwords,
                 "aliases": self.aliases
             }
@@ -53,7 +57,7 @@ class Manifest():
         match target:
             case al if al in self.aliases:
                 pw = self.aliases[al]
-                self.rm_alias(pw, True)
+                self.rm_alias(al, True)
                 return self.rm_pw(pw)
             case pw if pw in self.passwords:
                 self.passwords.remove(pw)
@@ -69,8 +73,23 @@ class Manifest():
             case _:
                 raise (ValueError("Element not in list."))
 
-    def audit(self, target):
+    def add_encryption(self, force):
+        if self.encrypted and not force:
+            print(helptext.WARN_RSA_OVERWRITE)
+            return [False, bool(len(self.passwords))]
+        else:
+            if force:
+                print("Overwriting previous key, force flag was set.")
+            self.encrypted = True
+            return [True, bool(len(self.passwords))]
 
+    def audit(self, target):
+        '''
+        Function to recursively find and delete orphaned items from manifest
+        and create entries for saved passwords lacking one. The target variable
+        can be any password name or alias. Raises a ValueError if target is
+        invalid.
+        '''
         match target:
             case al if al in self.aliases:
                 pw = self.aliases[al]

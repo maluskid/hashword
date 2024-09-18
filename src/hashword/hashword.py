@@ -2,6 +2,7 @@ from . import helptext
 from .pwdata import PwData
 from .manifest import Manifest
 from .filesys import FileSys
+from .rsaencrypt import Encrypto
 import os
 import pickle
 
@@ -16,40 +17,31 @@ class HashWord(dict):
         manifest.add_alias(target, nickname)
         manifest.close()
 
-    def audit(self):
+    def audit(self, rsapath=None):
+        '''
+        Iterates over entire manifest and every saved password to compare
+        values. Orphaned passwords and aliases will be removed from the
+        manifest, passwords which haven't been recorded in the manifest will
+        be added. Any aliases which may have been assigned to an unrecorded
+        password will need to be reset.
+        '''
         manifest = Manifest()
-        self.populate()
+        self.populate(rsapath)
         for item in manifest.passwords:
             if item not in self.keys():
-                print(item, manifest, "audit case0")
+                print(manifest, "\nManifest contains orphan password: ", item)
                 manifest.audit(item)
         for val in manifest.aliases.values():
             if val not in self.keys():
-                print(val, manifest, "audit case1")
+                print(manifest, "\nManifest contains orphan alias: ", val)
                 manifest.audit(val)
         for key in self:
             if key not in manifest.passwords:
+                print(manifest, "\nPassword not recorded in manifest: ", key)
                 manifest.add_pw(key)
         manifest.close()
 
-    def delete(self, arg):
-        manifest = Manifest()
-        try:
-            targ = manifest.rm_pw(arg)
-        except ValueError as e:
-            helptext.print_error(e)
-            helptext.print_usage(True)
-        except Exception as e:
-            helptext.print_error(e)
-        else:
-            filepath = os.path.join(self.p.DATA_PATH, targ)
-            try:
-                os.remove(filepath)
-                manifest.close()
-            except Exception as e:
-                helptext.print_error(e)
-
-    def create(self, algo, name, seed, size):
+    def create(self, algo, name, seed, size, rsapath=None):
         match [size, algo]:
             case [size_val, ('blake2b' | 'sha256')]:
                 if not size_val or size_val > 64:
@@ -69,12 +61,29 @@ class HashWord(dict):
                 self[name] = PwData(algo=algo, name=name,
                                     seed=seed_val, size=size_val)
             case seed_val if len(seed_val) <= 4:
-                raise (ValueError("Seed must be at least 5 characters in \
-                    length. Creating a password without a seed will default \
-                    to a randomly generated one."))
-        self.save()
+                raise (ValueError("""Seed must be at least 5 characters in
+                    length. Creating a password without a seed will default to
+                    a randomly generated one."""))
+        self.save(rsapath)
 
-    def get(self, target):
+    def delete(self, arg):
+        manifest = Manifest()
+        try:
+            targ = manifest.rm_pw(arg)
+        except ValueError as e:
+            helptext.print_error(e)
+            helptext.print_usage(True)
+        except Exception as e:
+            helptext.print_error(e)
+        else:
+            filepath = os.path.join(self.p.DATA_PATH, targ)
+            try:
+                os.remove(filepath)
+                manifest.close()
+            except Exception as e:
+                helptext.print_error(e)
+
+    def get(self, target, rsapath):
         try:
             manifest = Manifest()
             if target in manifest.passwords:
@@ -82,41 +91,13 @@ class HashWord(dict):
             elif target in manifest.aliases:
                 name = manifest.aliases[target]
             else:
-                raise ValueError("Value not found in manifest.")
+                raise ValueError("""Value not found in manifest. A broken
+                password manifest can be fixed using the `audit` command.""")
         except Exception as e:
             helptext.print_error(e)
         else:
-            self.load(name)
+            self.load(name, manifest.encrypted, rsapath)
             return (self[name].getpw())
-
-    def load(self, name):
-        # loads a specific password
-        filepath = os.path.join(self.p.DATA_PATH, name)
-        with open(filepath, 'rb') as f:
-            item = pickle.load(f)
-            self[item.name] = item
-
-    def showpath(self):
-        return self.p.DATA_PATH
-
-    def populate(self):
-        # loads every saved password in one go
-        for file in os.listdir(self.p.DATA_PATH):
-            if not file.endswith('.json') and not file.endswith('.bak'):
-                filepath = os.path.join(self.p.DATA_PATH, file)
-                with open(filepath, 'rb') as f:
-                    item = pickle.load(f)
-                    self[item.name] = item
-
-    def save(self):
-        dirpath = os.path.join(self.p.DATA_PATH)
-        manifest = Manifest()
-        for key in self:
-            filepath = os.path.join(dirpath, self[key].name)
-            manifest.add_pw(self[key].name)
-            with open(filepath, 'wb') as f:
-                pickle.dump(self[key], f)
-        manifest.close()
 
     def list_self(self):
         manifest = Manifest()
@@ -132,3 +113,62 @@ class HashWord(dict):
                 print("\t{alias}  -->  {pw}"
                       .format(alias=a, pw=manifest.aliases[a]))
         print('\n', end='')
+
+    def load(self, name, encrypted, rsapath=None):
+        # loads a specific password
+        try:
+            filepath = os.path.join(self.p.DATA_PATH, name)
+            with open(filepath, 'rb') as f:
+                item = pickle.load(f)
+                if encrypted:
+                    e = Encrypto(rsapath)
+                    decryptitem = e.decrypt(item)
+                    self[decryptitem.name] = decryptitem
+                else:
+                    self[item.name] = item
+        except Exception as e:
+            helptext.print_error(e)
+
+    def populate(self, rsapath=None):
+        # loads every saved password in one go
+        manifest = Manifest()
+        items = dict()
+        for file in os.listdir(self.p.DATA_PATH):
+            if not file.endswith('.json') and not file.endswith('.bak'):
+                filepath = os.path.join(self.p.DATA_PATH, file)
+                with open(filepath, 'rb') as f:
+                    items[file] = pickle.load(f)
+        if manifest.encrypted:
+            e = Encrypto(rsapath)
+            self = e.mass_decrypt(items.copy())
+        else:
+            self = items
+
+    def rsa(self, force, verbose):
+        self.populate()
+        e = Encrypto()
+        if e.setup(force_overwrite=force,
+                   verbose=verbose):
+            # path to private rsa key should be constant unless user is
+            # deleting files while Hashword is running.
+            self.save("rsa_key_priv")
+
+    def save(self, rsapath):
+        dirpath = os.path.join(self.p.DATA_PATH)
+        manifest = Manifest()
+        encdata = dict()
+        if manifest.encrypted:
+            e = Encrypto(rsapath)
+            encdata = e.mass_encrypt(self.copy())
+        for key in self:
+            filepath = os.path.join(dirpath, self[key].name)
+            manifest.add_pw(self[key].name)
+            with open(filepath, 'wb') as f:
+                if manifest.encrypted:
+                    pickle.dump(encdata[key], f)
+                else:
+                    pickle.dump(self[key], f)
+        manifest.close()
+
+    def showpath(self):
+        return self.p.DATA_PATH
