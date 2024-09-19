@@ -26,7 +26,7 @@ class Encrypto():
         try:
             if os.path.getsize(self.p.KEY_PATH) > 0 and self.user:
                 with open(os.path.join(self.p.KEY_PATH, self.user), 'rb') as f:
-                    fkey = rsa.decrypt(pickle.load(f), self.privkey)
+                    fkey = rsa.decrypt(f, self.privkey)
                     fernet = Fernet(fkey)
             elif os.path.getsize(self.p.KEY_PATH < 5):
                 # If no files saved in key_path, encryption hasn't been set up.
@@ -46,7 +46,7 @@ class Encrypto():
 
     def setup(self, force_overwrite=False, verbose=False):
         print(helptext.RSA_SETUP0)
-        input("Press any key to continue...")
+        os.system("PAUSE")
         [pub, priv] = rsa.newkeys(KEY_LEN)
         self.privkey = priv
         fkey = Fernet.generate_key()
@@ -61,12 +61,12 @@ class Encrypto():
             manifest.close()
             if ok:
                 with open("rsa_key_priv", 'wb') as p:
-                    os.write(p, priv.save_pkcs1())
+                    write(p, priv.save_pkcs1())
                 with open("rsa_key_pub", 'wb') as p:
-                    os.write(p, pub.save_pkcs1())
+                    write(p, pub.save_pkcs1())
                 with open(os.path.join(self.p.KEY_PATH, self.user), 'wb') as f:
                     encryptedfkey = rsa.encrypt(fkey, pub)
-                    pickle.dump(encryptedfkey, f)
+                    write(f, encryptedfkey)
                 print(helptext.RSA_SETUP1)
             return needs_encrypt
         except Exception as e:

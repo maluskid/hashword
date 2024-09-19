@@ -9,11 +9,16 @@ In order to install the hashword module so the `main.py` script will run properl
 Then copy main.py into any binary directory, rename it 'hashword' and ensure it has execute permissions.
 
 Usage:
-    `hashword add
-    hashword list
+    `
     hashword <name of password>
-    hashword del <name of password>
-    hashword alias <name of password> <alias>`
+    hashword add
+    hashword alias <foo> <alias>
+    hashword audit
+    hashword data
+    hashword list
+    hashword rm <name of password>
+    hashword rsa
+    `
 
 ###### Disclaimer
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as

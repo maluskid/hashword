@@ -15,7 +15,7 @@ NO_ENTRY = "\t\tThere isn't a help entry written for that yet . If you have" \
     "\n\tsuggestions for\nimproving Hashword or find any issues, report them" \
     "\n\tat https://github.com/maluskid/hashword/issues.\n"
 
-MAIN_TEXT = "\tUsage: hashword <foo>\n" \
+MAIN_TEXT = "Usage: hashword <foo>\n" \
     "\n\tPrint the hash of the saved value corresponding to <foo> or any" \
     "\n\tpassword <foo> is an alias of to STDOUT. Use `hashword list` to" \
     "\n\tview stored passwords and aliases. All data is stored in the home" \
@@ -31,7 +31,7 @@ MAIN_TEXT = "\tUsage: hashword <foo>\n" \
     "\n\tMac Terminal - <cmd-c>\n"
 
 # Help entries in alphabetical order below ------------------------------------
-ADD_TEXT = "\tUsage: hashword add\n" \
+ADD_TEXT = "Usage: hashword add\n" \
     "\n\tThis command will begin a step by step process in the terminal to" \
     "\n\tadd a new password to the keyring. Multiple hashing algorithms are" \
     "\n\tavailable to select from:\n\tsha256, blake2b, md5, sha-3" \
@@ -47,13 +47,13 @@ ADD_TEXT = "\tUsage: hashword add\n" \
     "\n\tfiles located in `../.hashword/data`. The full path to this" \
     "\n\tdirectory can be viewed with the `data` command."
 
-ALIAS_TEXT = "\tUsage: hashword alias <foo> <alias>\n" \
+ALIAS_TEXT = "Usage: hashword alias <foo> <alias>\n" \
     "\n\tThis command will link the password <foo> to an alias <alias>." \
     "\n\tAny subsequent calls to hashword will treat any command using" \
     "\n\t<alias> the same as though it were entered using <foo>. You can" \
     "\n\tview all aliases with the `list` command.\n"
 
-AUDIT_TEXT = "\tUsage: hashword audit\n" \
+AUDIT_TEXT = "Usage: hashword audit\n" \
     "\n\tThis command will perform an audit of the saved `manifest.json` and" \
     "\n\tall saved passwords. Use this command if an old password isn't" \
     "\n\trecognized after a fresh installation. Aliases previously assigned" \
@@ -61,24 +61,24 @@ AUDIT_TEXT = "\tUsage: hashword audit\n" \
     "\n\tpassword file has been removed without the use of the `rm` command," \
     "\n\tthis command will fix the broken manifest.\n"
 
-DATA_TEXT = "\tUsage: hashword data\n" \
+DATA_TEXT = "Usage: hashword data\n" \
     "\n\tThis command will display path to the data directory where all" \
     "\n\tpassword data is stored. If RSA encryption hasn't been set up," \
     "\n\tthese files are incredibly easy to gain information from. For" \
     "\n\tyour data safety, using RSA encryption is highly recommended.\n"
 
-LIST_TEXT = "\tUsage: hashword list\n" \
+LIST_TEXT = "Usage: hashword list\n" \
     "\n\tThis command displays all saved passwords as well as any aliases" \
     "\n\tassigned to them.\n"
 
-RM_TEXT = "\tUsage: hashword rm <foo>\n" \
+RM_TEXT = "Usage: hashword rm <foo>\n" \
     "\n\tThis command removes all files stored in the .hashword/data/" \
     "\n\tdirectory pertaining to <foo>. This *CANNOT* be undone, so use care" \
     "\n\twhen executing this command. Making a backup is recommended, all" \
     "\n\tare named by the password they refer to. Hashword encrypts all" \
     "\n\tpassword files with your RSA public key before saving them.\n"
 
-RSA_TEXT = "\tUsage: hashword rsa\n" \
+RSA_TEXT = "Usage: hashword rsa\n" \
     "\n\tThis software uses RSA keys to verify your identity and protect" \
     "\n\tyour passwords. The rsa command will begin a step by step process" \
     "\n\tin the terminal to complete first time setup or manage RSA keys." \
@@ -91,7 +91,7 @@ RSA_TEXT = "\tUsage: hashword rsa\n" \
     "\n\t\t-f --force\t\tforce RSA setup to overwrite a previously saved key."
 
 # RSA Encryption setup messages below _________________________________________
-RSA_SETUP0 = "\tRSA Encryption setup:" \
+RSA_SETUP0 = "RSA Encryption setup:" \
     "\n\tHashword will create a private and public RSA key for you. The" \
     "\n\tpublic key will be stored in the `.hashword/Keys` directory. The" \
     "\n\tprivate key will be provided and up to you to store wherever you" \
@@ -99,19 +99,19 @@ RSA_SETUP0 = "\tRSA Encryption setup:" \
     "\n\tpasswords once encryption has been set up. Keep this key in a safe" \
     "\n\tplace and do not lose it.\n"
 
-RSA_SETUP1 = "\tRSA Encryption setup:" \
+RSA_SETUP1 = "RSA Encryption setup:" \
     "\n\tEncryption setup is complete. Your private and public keys have" \
     "\n\tbeen saved in the current working directory.\n"
 
 # Warning & error messages below ----------------------------------------------
-WARN_KEYS = "\n\tWARN: Using this program without encryption exposes your" \
+WARN_KEYS = "\nWARN: Using this program without encryption exposes your" \
     "\n\tsaved passwords to possible theft. If this is your first time using" \
     "\n\tthis program, use `hashword rsa` to set up encryption.\n"
 
-WARN_MANIFEST = "\n\tWARN: manifest.json is empty, you may need to restore" \
-    "\n\tit. Use the `audit` command to fix a broken manifest.\n"
+WARN_MANIFEST = "\nWARN: manifest.json is empty, you may need to restore it." \
+    "\n\tUse the `audit` command to fix a broken manifest.\n"
 
-WARN_RSA_OVERWRITE = "\n\tWARN: Rsa encryption has already been set up and" \
+WARN_RSA_OVERWRITE = "\nWARN: Rsa encryption has already been set up and" \
     "\n\ta previously saved encryption key exists. If this key is deleted" \
     "\n\tit may make any encrypted passwords irretrievable. Use the `-f`" \
     "\n\tflag to force the setup function to overwrite the old key.\n"
