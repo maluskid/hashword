@@ -3,3 +3,4 @@ dist
 __pycache__
 hashword/__pycache__
 test-keys
+hashword.spec
