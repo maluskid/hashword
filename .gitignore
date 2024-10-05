@@ -3,4 +3,6 @@ dist
 __pycache__
 hashword/__pycache__
 test-keys
+rsa_key_priv
+rsa_key_pub
 hashword.spec
