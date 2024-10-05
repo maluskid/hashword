@@ -26,7 +26,8 @@ class Encrypto():
         try:
             if os.path.getsize(self.p.KEY_PATH) > 0 and self.user:
                 with open(os.path.join(self.p.KEY_PATH, self.user), 'rb') as f:
-                    fkey = rsa.decrypt(f, self.privkey)
+                    enc_fkey = f.read()
+                    fkey = rsa.decrypt(enc_fkey, self.privkey)
                     fernet = Fernet(fkey)
             elif os.path.getsize(self.p.KEY_PATH < 5):
                 # If no files saved in key_path, encryption hasn't been set up.
@@ -61,12 +62,12 @@ class Encrypto():
             manifest.close()
             if ok:
                 with open("rsa_key_priv", 'wb') as p:
-                    write(p, priv.save_pkcs1())
+                    p.write(priv.save_pkcs1())
                 with open("rsa_key_pub", 'wb') as p:
-                    write(p, pub.save_pkcs1())
+                    p.write(pub.save_pkcs1())
                 with open(os.path.join(self.p.KEY_PATH, self.user), 'wb') as f:
                     encryptedfkey = rsa.encrypt(fkey, pub)
-                    write(f, encryptedfkey)
+                    f.write(encryptedfkey)
                 print(helptext.RSA_SETUP1)
             return needs_encrypt
         except Exception as e:
