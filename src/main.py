@@ -14,9 +14,8 @@ def execute_add(options):
         case {"algo": algo,
               "name": name,
               "seed": seed,
-              "size": size,
-              "keypath": rsapath}:
-            return (algo, name, seed, size, rsapath)
+              "size": size}:
+            return (algo, name, seed, size)
         case _:
             raise (Exception("An unforseen circumstance has arisen"))
 
@@ -28,7 +27,6 @@ def parse_args():
         "name": None,
         "seed": None,
         "size": None,
-        "keypath": None,
         "force": None,
         "verbose": None
     }
@@ -49,8 +47,6 @@ def parse_args():
                                     options["seed"] = value
                                 case [('-s' | '--size'), value]:
                                     options["size"] = int(value)
-                                case [('-k' | '--key'), value]:
-                                    options["keypath"] = value
                                 case [first, second]:
                                     errormsg = "Option {f} {s} not recognized."
                                     errormsg.format(f=first, s=second)
@@ -64,12 +60,6 @@ def parse_args():
                             options["force"] = True
                         case [('-v' | '--verbose')]:
                             options["verbose"] = True
-                        case [('-k' | '--key')]:
-                            if args:
-                                options["keypath"] = args.pop(0)
-                            else:
-                                errormsg = "Invalid use of `-k` flag."
-                                raise (ValueError(errormsg))
                         case val:
                             argslist.append(val)
             case _:
@@ -77,7 +67,7 @@ def parse_args():
     except ValueError as e:
         perror(e)
     except RuntimeError as e:
-        perror(e)
+        print(e)
         pusage(addendum=True)
         sys.exit(0)
     except Exception as e:
@@ -92,8 +82,8 @@ if __name__ == "__main__":
     match argslist[0]:
         case "add":
             try:
-                [algo, name, seed, size, rsapath] = execute_add(optslist)
-                h.create(algo, name, seed, size, rsapath)
+                [algo, name, seed, size] = execute_add(optslist)
+                h.create(algo, name, seed, size)
             except Exception as e:
                 perror(e)
             name = optslist["name"]
@@ -113,11 +103,6 @@ if __name__ == "__main__":
             except Exception as e:
                 perror(e)
                 pusage()
-        case "rsa":
-            try:
-                h.rsa(optslist["force"], optslist["verbose"])
-            except Exception as e:
-                perror(e)
         case "data":
             try:
                 print("Password data saved at {location}".format(
@@ -129,11 +114,11 @@ if __name__ == "__main__":
             phelp(argslist)
         case 'audit':
             print("Beginning audit...")
-            h.audit(optslist["keypath"])
+            h.audit()
             print("Audit complete!")
             h.list_self()
         case arg:
             try:
-                print(h.get(arg, optslist["keypath"]))
+                print(h.get(arg))
             except Exception as e:
                 perror(e)

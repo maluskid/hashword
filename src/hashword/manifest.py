@@ -10,14 +10,12 @@ class Manifest():
         self.p = FileSys()
         self.passwords = list()
         self.aliases = dict()
-        self.encrypted = False
         if os.path.getsize(self.p.M_PATH) > 0:
             with open(self.p.M_PATH, 'r+') as m:
                 try:
                     savedm = json.load(m)
                     self.aliases.update(savedm["aliases"])
                     self.passwords = savedm["passwords"].copy()
-                    self.encrypted = savedm["encrypted"]
                 except json.JSONDecodeError as e:
                     print("Error: {err} encountered decoding manifest.json"
                           .format(err=e))
@@ -29,7 +27,6 @@ class Manifest():
     def close(self):
         with open(self.p.M_PATH, 'w+') as m:
             msaver = {
-                "encrypted": self.encrypted,
                 "passwords": self.passwords,
                 "aliases": self.aliases
             }
@@ -44,13 +41,21 @@ class Manifest():
     def rm_alias(self, alias, verbose=False):
         pw = self.aliases.pop(alias)
         if verbose:
-            print("Alias {a} for {p} removed.".format(a=alias, p=pw))
+            print("Alias", alias, "for", pw, "removed.")
 
     def add_pw(self, password):
         if password not in self.passwords:
             self.passwords.append(password)
         else:
             raise (ValueError("Element already exists in list."))
+
+    def print(self):
+        print("Passwords:\n")
+        for p in self.passwords:
+            print(p)
+        print("Aliases:\n")
+        for k, v in self.aliases.items():
+            print(k, " --> ", v)
 
     def rm_pw(self, target):
 
@@ -73,38 +78,29 @@ class Manifest():
             case _:
                 raise (ValueError("Element not in list."))
 
-    def add_encryption(self, force):
-        if self.encrypted and not force:
-            print(helptext.WARN_RSA_OVERWRITE)
-            return [False, bool(len(self.passwords))]
-        else:
-            if force:
-                print("Overwriting previous key, force flag was set.")
-            self.encrypted = True
-            return [True, bool(len(self.passwords))]
-
     def audit(self, target):
         '''
-        Function to recursively find and delete orphaned items from manifest
-        and create entries for saved passwords lacking one. The target variable
-        can be any password name or alias. Raises a ValueError if target is
-        invalid.
+        Function to find and delete orphaned items from manifest
+        The target variable can be any password name or alias. Raises a
+        ValueError if target is invalid.
         '''
         match target:
             case al if al in self.aliases:
-                pw = self.aliases[al]
                 self.aliases.pop(al)
-                self.audit(pw)
+                print("Orphaned alias removed.")
             case pw if pw in self.passwords:
                 self.passwords.remove(pw)
+                print("Orphaned password removed.")
+                print("Checking for aliases of", pw)
+                keylist = []
                 if pw in self.aliases.values():
-                    keylist = []
-                    for key in self.aliases:
+                    for key in self.aliases.keys():
                         if self.aliases[key] == pw:
                             keylist.append(key)
-                    if keylist:
-                        for a in keylist:
-                            self.aliases.pop(a)
-                return pw
+                if keylist:
+                    print("Removing aliases:")
+                    for a in keylist:
+                        print(a)
+                        self.aliases.pop(a)
             case _:
                 raise (ValueError("Element not in list."))

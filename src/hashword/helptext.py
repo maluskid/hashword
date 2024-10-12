@@ -3,13 +3,12 @@
 
 # Important help text below ---------------------------------------------------
 USAGE = "Usage:\n\thashword <foo>\t\t\tshow hash for <foo>" \
-    "\n\thashword add\t\t\tadd new password" \
+    "\n\thashword add <flags> <foo>\tadd new password named <foo>" \
     "\n\thashword alias <foo> <alias>\talias <foo> as <alias>" \
     "\n\thashword audit\t\t\taudits saved aliases and passwords" \
     "\n\thashword data\t\t\tshow path to `/.hashword/data`" \
     "\n\thashword list\t\t\tlist saved passwords" \
-    "\n\thashword rm <foo>\t\tremove <foo>" \
-    "\n\thashword rsa\t\t\tmanage RSA keys\n\n"
+    "\n\thashword rm <foo>\t\tremove <foo>"
 
 NO_ENTRY = "\t\tThere isn't a help entry written for that yet . If you have" \
     "\n\tsuggestions for\nimproving Hashword or find any issues, report them" \
@@ -45,7 +44,20 @@ ADD_TEXT = "Usage: hashword add\n" \
     "\n\tgenerate it." \
     "\n\n\tSeeds are stored with the rest of password data in the encrypted" \
     "\n\tfiles located in `../.hashword/data`. The full path to this" \
-    "\n\tdirectory can be viewed with the `data` command."
+    "\n\tdirectory can be viewed with the `data` command." \
+    "\n\nFlags: -a, -S, -s\n" \
+    "\n\t(-a || --algorithm) <foo> Determines which algorithm to use." \
+    "\n\tIf no value is supplied, the default sha256 hash will be used." \
+    "\n\tValid inputs: blake2b, md5, sha256, sha-3\n" \
+    "\n\t(-S || --seed) <foo> Determines a seed phrase for the hashed" \
+    "\n\tpassword. If no value is supplied, a randomized seed will be used." \
+    "\n\tIt will be impossible to recreate this hash without specifying a" \
+    "\n\tseed.\n" \
+    "\n\t(-s || --size) <int> Sets the length of the hex string output of" \
+    "\n\tthe hash. Defaults to maximum size for pertaining algorithm, if a" \
+    "\n\tnumber larger than the algorithm supports is entered, the default is" \
+    "\n\tused."
+
 
 ALIAS_TEXT = "Usage: hashword alias <foo> <alias>\n" \
     "\n\tThis command will link the password <foo> to an alias <alias>." \
@@ -78,43 +90,9 @@ RM_TEXT = "Usage: hashword rm <foo>\n" \
     "\n\tare named by the password they refer to. Hashword encrypts all" \
     "\n\tpassword files with your RSA public key before saving them.\n"
 
-RSA_TEXT = "Usage: hashword rsa\n" \
-    "\n\tThis software uses RSA keys to verify your identity and protect" \
-    "\n\tyour passwords. The rsa command will begin a step by step process" \
-    "\n\tin the terminal to complete first time setup or manage RSA keys." \
-    "\n\tPasswords are encrypted using your public key. In order to decrypt" \
-    "\n\tthem, you must supply your private key. The first time you use this" \
-    "\n\tprogram, you will be guided through RSA key setup. When prompted," \
-    "\n\tsupply the path to your private key to decrypt your passwords.\n\n" \
-    "\n\tFlags:" \
-    "\n\t\t-v, --verbose\t\tdisplay rsa public and private key in STDOUT." \
-    "\n\t\t-f --force\t\tforce RSA setup to overwrite a previously saved key."
-
-# RSA Encryption setup messages below _________________________________________
-RSA_SETUP0 = "RSA Encryption setup:" \
-    "\n\tHashword will create a private and public RSA key for you. The" \
-    "\n\tpublic key will be stored in the `.hashword/Keys` directory. The" \
-    "\n\tprivate key will be provided and up to you to store wherever you" \
-    "\n\tlike. This private key will need to be provided to access your" \
-    "\n\tpasswords once encryption has been set up. Keep this key in a safe" \
-    "\n\tplace and do not lose it.\n"
-
-RSA_SETUP1 = "RSA Encryption setup:" \
-    "\n\tEncryption setup is complete. Your private and public keys have" \
-    "\n\tbeen saved in the current working directory.\n"
-
 # Warning & error messages below ----------------------------------------------
-WARN_KEYS = "\nWARN: Using this program without encryption exposes your" \
-    "\n\tsaved passwords to possible theft. If this is your first time using" \
-    "\n\tthis program, use `hashword rsa` to set up encryption.\n"
-
 WARN_MANIFEST = "\nWARN: manifest.json is empty, you may need to restore it." \
     "\n\tUse the `audit` command to fix a broken manifest.\n"
-
-WARN_RSA_OVERWRITE = "\nWARN: Rsa encryption has already been set up and" \
-    "\n\ta previously saved encryption key exists. If this key is deleted" \
-    "\n\tit may make any encrypted passwords irretrievable. Use the `-f`" \
-    "\n\tflag to force the setup function to overwrite the old key.\n"
 
 ERROR_MSG = "Error: {err} Use `hashword --help` for more information.\n"
 
@@ -127,8 +105,8 @@ def print_error(error):
 def print_usage(addendum=False):
     print(USAGE)
     if addendum:
-        print("\tFor help with a specific command, "
-              + "run `hashword --help <command>`\n\t"
+        print("\n\tFor help with a specific command, "
+              + "run `hashword --help <command>`\n\n\t"
               + "For more in depth help in general, run "
               + "`hashword --help all`\n")
 
@@ -152,8 +130,6 @@ def display_help(args):
                     print(LIST_TEXT)
                 case "rm":
                     print(RM_TEXT)
-                case "rsa":
-                    print(RSA_TEXT)
                 case "data":
                     print(DATA_TEXT)
                 case _:
