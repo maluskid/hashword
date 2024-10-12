@@ -1,6 +1,6 @@
 [project]
 name = "hashword"
-version = "0.0.3"
+version = "0.0.31"
 authors = [{ name = "Dominic Maluskid", email = "dominic.maluski@gmail.com" }]
 description = "Hashword is a program to help you hash passwords with seeds, and keep track of them."
 readme = "README.md"
@@ -10,6 +10,9 @@ classifiers = [
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "Operating System :: OS Independent",
 ]
+
+[project.scripts]
+hashword = "hashword:main"
 
 [project.urls]
 Homepage = "https://github.com/maluskid/hashword"
