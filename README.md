@@ -12,7 +12,7 @@ Usage:
 &emsp;`hashword alias <foo> <alias>`  
 &emsp;`hashword audit`  
 &emsp;`hashword data`  
-&emsp;`hashword list` 
+&emsp;`hashword list`  
 &emsp;`hashword rm <name of password>`  
 &emsp;`hashword rsa`  
 
