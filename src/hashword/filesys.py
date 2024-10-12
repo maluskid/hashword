@@ -11,6 +11,7 @@ class FileSys:
         self.DATA_PATH = os.path.join(path, 'Data/')
         self.KEY_PATH = os.path.join(path, 'Keys/')
         self.M_PATH = os.path.join(self.DATA_PATH, 'manifest.json')
+        self.FERNET = os.path.join(self.KEY_PATH, user)
         # create relevant directories and files if they don't exist
         if not os.path.exists(self.DATA_PATH):
             os.makedirs(os.path.join(self.DATA_PATH))

@@ -2,7 +2,6 @@ import os
 import pickle
 import rsa
 import sys
-import getpass
 from cryptography.fernet import Fernet
 from . import helptext
 from .filesys import FileSys
@@ -16,7 +15,6 @@ KEY_LEN = 3072
 class Encrypto():
 
     def __init__(self, key=None):
-        self.user = getpass.getuser()
         self.p = FileSys()
         if key:
             self.privkey = self.load_privkey(key)
@@ -24,18 +22,15 @@ class Encrypto():
     def load_fkey(self):
         fernet = None
         try:
-            if os.path.getsize(self.p.KEY_PATH) > 0 and self.user:
-                with open(os.path.join(self.p.KEY_PATH, self.user), 'rb') as f:
+            if os.path.getsize(self.p.FERNET) > 2:
+                with open(self.p.FERNET, 'rb') as f:
                     enc_fkey = f.read()
                     fkey = rsa.decrypt(enc_fkey, self.privkey)
                     fernet = Fernet(fkey)
-            elif os.path.getsize(self.p.KEY_PATH < 5):
-                # If no files saved in key_path, encryption hasn't been set up.
-                print(helptext.WARN_KEYS)
-            else:
-                raise (FileNotFoundError)
         except Exception as e:
             helptext.print_error(e)
+            # If no files saved in key_path, encryption hasn't been set up.
+            print(helptext.WARN_KEYS)
         return fernet
 
     def load_privkey(keypath):
@@ -65,7 +60,7 @@ class Encrypto():
                     p.write(priv.save_pkcs1())
                 with open("rsa_key_pub", 'wb') as p:
                     p.write(pub.save_pkcs1())
-                with open(os.path.join(self.p.KEY_PATH, self.user), 'wb') as f:
+                with open(os.path.join(self.p.FERNET), 'wb') as f:
                     encryptedfkey = rsa.encrypt(fkey, pub)
                     f.write(encryptedfkey)
                 print(helptext.RSA_SETUP1)

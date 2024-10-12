@@ -3,6 +3,7 @@ from .pwdata import PwData
 from .manifest import Manifest
 from .filesys import FileSys
 from .rsaencrypt import Encrypto
+from copy import deepcopy
 import os
 import pickle
 
@@ -27,18 +28,24 @@ class HashWord(dict):
         '''
         manifest = Manifest()
         self.populate(rsapath)
-        for item in manifest.passwords:
-            if item not in self.keys():
-                print(manifest, "\nManifest contains orphan password: ", item)
+        old = deepcopy(self)
+        old_man = deepcopy(manifest)
+        for item in old_man.passwords:
+            print("Checking password", item)
+            if item not in self and item in manifest.passwords:
+                print(item, "is an orphaned password...")
                 manifest.audit(item)
-        for val in manifest.aliases.values():
-            if val not in self.keys():
-                print(manifest, "\nManifest contains orphan alias: ", val)
-                manifest.audit(val)
-        for key in self:
+        for key, val in old_man.aliases.items():
+            print("Checking alias", key, "of", val)
+            if val not in self and key in manifest.aliases:
+                print(key, "is an orphaned alias...")
+                manifest.audit(key)
+        for key in old.keys():
+            print("Ensuring manifest entry for", key)
             if key not in manifest.passwords:
-                print(manifest, "\nPassword not recorded in manifest: ", key)
+                print(key, "not recorded.")
                 manifest.add_pw(key)
+                print("Entry for", key, "added to manifest.")
         manifest.close()
 
     def create(self, algo, name, seed, size, rsapath=None):

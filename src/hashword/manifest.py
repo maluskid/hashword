@@ -15,13 +15,21 @@ class Manifest():
             with open(self.p.M_PATH, 'r+') as m:
                 try:
                     savedm = json.load(m)
-                    self.aliases.update(savedm["aliases"])
-                    self.passwords = savedm["passwords"].copy()
-                    self.encrypted = savedm["encrypted"]
                 except json.JSONDecodeError as e:
                     print("Error: {err} encountered decoding manifest.json"
                           .format(err=e))
-        elif os.path.getsize(self.p.DATA_PATH) > 5:
+                self.aliases.update(savedm["aliases"])
+                self.passwords = savedm["passwords"].copy()
+                try:
+                    self.encrypted = savedm["encrypted"]
+                except KeyError:
+                    if os.path.getsize(self.p.FERNET) < 1:
+                        # If a Fernet key has been saved,
+                        # hasn't been set up.
+                        self.encrypted = False
+                    else:
+                        self.encrypted = True
+        elif os.path.getsize(self.p.DATA_PATH) < 5:
             # If DATA_PATH is empty or nearly empty, it is likely there are no
             # saved passwords and the warning is unneccessary
             print(helptext.WARN_MANIFEST)
@@ -85,26 +93,28 @@ class Manifest():
 
     def audit(self, target):
         '''
-        Function to recursively find and delete orphaned items from manifest
+        Function to find and delete orphaned items from manifest
         and create entries for saved passwords lacking one. The target variable
         can be any password name or alias. Raises a ValueError if target is
         invalid.
         '''
         match target:
             case al if al in self.aliases:
-                pw = self.aliases[al]
                 self.aliases.pop(al)
-                self.audit(pw)
+                print("Orphaned alias removed.")
             case pw if pw in self.passwords:
                 self.passwords.remove(pw)
+                print("Orphaned password removed.")
+                print("Checking for aliases of", pw)
+                keylist = []
                 if pw in self.aliases.values():
-                    keylist = []
                     for key in self.aliases:
                         if self.aliases[key] == pw:
                             keylist.append(key)
-                    if keylist:
-                        for a in keylist:
-                            self.aliases.pop(a)
-                return pw
+                if keylist:
+                    print("Removing aliases:")
+                    for a in keylist:
+                        print(a)
+                        self.aliases.pop(a)
             case _:
                 raise (ValueError("Element not in list."))
