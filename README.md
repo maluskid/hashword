@@ -2,23 +2,19 @@ Hashword
 ============
 
 Hashword, a program to help you hash passwords with seeds, and keep track of them. Stored passwords are not encrypted, so be careful.
-In order to install the hashword module so the `main.py` script will run properly, execute the following in the hashword directory:
-`pip install --upgrade build`
-`python3 -m build`
-`pip install ./dist/hashword-0.0.2.tar.gz`
-Then copy main.py into any binary directory, rename it 'hashword' and ensure it has execute permissions.
+In order to install Hasword, execute the following in the top project directory:
+`pip install --upgrade pipx`  
+`pipx install .`  
 
-Usage:
-    `
-    hashword <name of password>
-    hashword add
-    hashword alias <foo> <alias>
-    hashword audit
-    hashword data
-    hashword list
-    hashword rm <name of password>
-    hashword rsa
-    `
+Usage:  
+&emsp;`hashword <name of password>`  
+&emsp;`hashword add`  
+&emsp;`hashword alias <foo> <alias>`  
+&emsp;`hashword audit`  
+&emsp;`hashword data`  
+&emsp;`hashword list`  
+&emsp;`hashword rm <name of password>`  
+&emsp;`hashword rsa`  
 
 ###### Disclaimer
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as
