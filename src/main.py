@@ -1,3 +1,4 @@
+#! /bin/python3
 import sys
 from hashword import HashWord as hword
 from hashword import print_error as perror
@@ -75,7 +76,7 @@ def parse_args():
     return [argslist, options]
 
 
-def hashword_cli():
+if __name__ == "__main__":
     h = hword()
     [argslist, optslist] = parse_args()
     match argslist[0]:
