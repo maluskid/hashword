@@ -7,14 +7,16 @@ In order to install Hasword, execute the following in the top project directory:
 `pipx install .`  
 
 Usage:
-&emsp;`hashword <name of password>`  
-&emsp;`hashword add`  
-&emsp;`hashword alias <foo> <alias>`  
-&emsp;`hashword audit`  
-&emsp;`hashword data`  
-&emsp;`hashword list` 
-&emsp;`hashword rm <name of password>`  
-&emsp;`hashword rsa`  
+    `
+    hashword <name of password>  
+    hashword add  
+    hashword alias <foo> <alias>  
+    hashword audit  
+    hashword data  
+    hashword list  
+    hashword rm <name of password>  
+    hashword rsa  
+    `
 
 ###### Disclaimer
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as
