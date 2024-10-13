@@ -14,9 +14,6 @@ classifiers = [
 [project.scripts]
 hashword = "hashword:main"
 
-[project.entry-points."pipx.run"]
-hashword = "hashword:main"
-
 [project.urls]
 Homepage = "https://github.com/maluskid/hashword"
 Issues = "https://github.com/maluskid/hashword/issues"
