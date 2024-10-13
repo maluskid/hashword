@@ -6,7 +6,7 @@ In order to install Hasword, execute the following in the top project directory:
 `pip install --upgrade pipx`  
 `pipx install .`  
 
-Usage:  
+Usage:
 &emsp;`hashword <name of password>`  
 &emsp;`hashword add`  
 &emsp;`hashword alias <foo> <alias>`  
