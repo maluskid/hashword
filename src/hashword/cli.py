@@ -1,8 +1,8 @@
 import sys
-from hashword import HashWord as hword
-from hashword import print_error as perror
-from hashword import print_usage as pusage
-from hashword import display_help as phelp
+from tools.helptext import print_error as perror
+from tools.helptext import print_usage as pusage
+from tools.helptext import display_help as phelp
+from .hashword import HashWord as hword
 
 
 def execute_add(options):
@@ -121,3 +121,7 @@ def hashword_cli():
                 print(h.get(arg))
             except Exception as e:
                 perror(e)
+
+
+if __name__ == "__main__":
+    hashword_cli()

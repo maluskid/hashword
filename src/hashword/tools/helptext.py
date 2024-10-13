@@ -55,8 +55,8 @@ ADD_TEXT = "Usage: hashword add\n" \
     "\n\tseed.\n" \
     "\n\t(-s || --size) <int> Sets the length of the hex string output of" \
     "\n\tthe hash. Defaults to maximum size for pertaining algorithm, if a" \
-    "\n\tnumber larger than the algorithm supports is entered, the default is" \
-    "\n\tused."
+    "\n\tnumber larger than the algorithm supports is entered, the default" \
+    "\n\tis used."
 
 
 ALIAS_TEXT = "Usage: hashword alias <foo> <alias>\n" \

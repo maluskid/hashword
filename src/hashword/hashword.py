@@ -1,7 +1,7 @@
-from . import helptext
-from .pwdata import PwData
-from .manifest import Manifest
-from .filesys import FileSys
+from tools import helptext
+from tools import Manifest
+from tools import PwData
+from tools import FileSys
 from copy import deepcopy
 import os
 import pickle
@@ -135,7 +135,8 @@ class HashWord(dict):
             if not file.endswith('.json') and not file.endswith('.bak'):
                 filepath = os.path.join(self.p.DATA_PATH, file)
                 with open(filepath, 'rb') as f:
-                    self[file] = pickle.load(f)
+                    item = pickle.load(f)
+                    self[item.name] = item
 
     def save(self):
         dirpath = os.path.join(self.p.DATA_PATH)

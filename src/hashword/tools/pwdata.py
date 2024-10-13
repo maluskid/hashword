@@ -16,12 +16,13 @@ def seed_generator():
     for i in range(length):
         index = random.randrange(66)
         rstring += alphabet[index]
-    return base64.encodebytes(rstring.encode()).decode()
+    return base64.b64encode(rstring.encode())
 
 
 class PwData:
 
-    def __init__(self, name, size, algo='sha256', seed=seed_generator()):
+    def __init__(self, name, size, algo='sha256',
+                 seed=seed_generator().decode()):
         self.hash_alg = algo
         self.name = name
         self.seed = seed
