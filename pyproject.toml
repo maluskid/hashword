@@ -11,9 +11,6 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 
-[project.scripts]
-hashword = "hashword:main"
-
 [project.urls]
 Homepage = "https://github.com/maluskid/hashword"
 Issues = "https://github.com/maluskid/hashword/issues"
