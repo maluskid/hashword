@@ -4,7 +4,7 @@ from . import helptext
 from .filesys import FileSys
 
 
-class Manifest():
+class Manifest:
 
     def __init__(self):
         self.p = FileSys()
@@ -23,13 +23,13 @@ class Manifest():
                 try:
                     self.encrypted = savedm["encrypted"]
                 except KeyError:
-                    if os.path.getsize(self.p.FERNET) < 1:
+                    if os.path.exists(self.p.FERNET):
                         # If a Fernet key has been saved,
                         # hasn't been set up.
-                        self.encrypted = False
-                    else:
                         self.encrypted = True
-        elif os.path.getsize(self.p.DATA_PATH) < 5:
+                    else:
+                        self.encrypted = False
+        elif os.path.getsize(self.p.DATA_PATH) < 3:
             # If DATA_PATH is empty or nearly empty, it is likely there are no
             # saved passwords and the warning is unneccessary
             print(helptext.WARN_MANIFEST)
@@ -84,12 +84,13 @@ class Manifest():
     def add_encryption(self, force):
         if self.encrypted and not force:
             print(helptext.WARN_RSA_OVERWRITE)
-            return [False, bool(len(self.passwords))]
+            # CHANGE TO FALSE LATER
+            return True
         else:
             if force:
                 print("Overwriting previous key, force flag was set.")
             self.encrypted = True
-            return [True, bool(len(self.passwords))]
+            return True
 
     def audit(self, target):
         '''

@@ -60,11 +60,11 @@ def parse_args():
             case [_, *args] if len(args) >= 1:
                 while args:
                     match args.pop(0):
-                        case [('-f' | '--force')]:
+                        case ('-f' | '--force'):
                             options["force"] = True
-                        case [('-v' | '--verbose')]:
+                        case ('-v' | '--verbose'):
                             options["verbose"] = True
-                        case [('-k' | '--key')]:
+                        case ('-k' | '--key'):
                             if args:
                                 options["keypath"] = args.pop(0)
                             else:
@@ -114,10 +114,13 @@ if __name__ == "__main__":
                 perror(e)
                 pusage()
         case "rsa":
-            try:
-                h.rsa(optslist["force"], optslist["verbose"])
-            except Exception as e:
-                perror(e)
+            v = False
+            if optslist["verbose"]:
+                v = True
+            # try:
+            h.rsa(optslist["force"], optslist["verbose"])
+            # except Exception as e:
+            #     perror(e)
         case "data":
             try:
                 print("Password data saved at {location}".format(
@@ -132,6 +135,10 @@ if __name__ == "__main__":
             h.audit(optslist["keypath"])
             print("Audit complete!")
             h.list_self()
+        case 'undo':
+            h.rsa_undo()
+            h.audit()
+
         case arg:
             try:
                 print(h.get(arg, optslist["keypath"]))

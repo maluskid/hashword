@@ -5,7 +5,7 @@ from .filesys import FileSys
 from .rsaencrypt import Encrypto
 from copy import deepcopy
 import os
-import pickle
+import json
 
 
 class HashWord(dict):
@@ -49,24 +49,25 @@ class HashWord(dict):
         manifest.close()
 
     def create(self, algo, name, seed, size, rsapath=None):
+        data = {'algo': algo, 'name': name, 'seed': seed, 'size': size}
         match [size, algo]:
             case [size_val, ('blake2b' | 'sha256')]:
                 if not size_val or size_val > 64:
-                    size_val = 64
+                    data['size'] = 64
             case [size_val, ('md5' | 'sha-3')]:
                 if not size_val or size_val > 32:
-                    size_val = 32
+                    data['size'] = 32
             case [size_val, _]:
-                algo = 'sha256'
+                data['algo'] = 'sha256'
                 if not size_val or size_val > 64:
-                    size_val = 64
+                    data['size'] = 64
         match seed:
             case None:
-                self[name] = PwData(algo=algo, name=name, size=size_val)
+                self[name] = PwData(data)
             case seed_val if len(seed_val) > 4:
                 seed_val += '\n'
-                self[name] = PwData(algo=algo, name=name,
-                                    seed=seed_val, size=size_val)
+                data['seed'] = seed_val
+                self[name] = PwData(data)
             case seed_val if len(seed_val) <= 4:
                 raise (ValueError("""Seed must be at least 5 characters in
                     length. Creating a password without a seed will default to
@@ -103,7 +104,7 @@ class HashWord(dict):
         except Exception as e:
             helptext.print_error(e)
         else:
-            self.load(name, manifest.encrypted, rsapath)
+            self.load(name, rsapath)
             return (self[name].getpw())
 
     def list_self(self):
@@ -119,62 +120,86 @@ class HashWord(dict):
             for a in manifest.aliases:
                 print("\t{alias}  -->  {pw}"
                       .format(alias=a, pw=manifest.aliases[a]))
+        if manifest.encrypted:
+            print("\nPasswords are encrypted.")
+        else:
+            print("\nPasswords not encrypted.")
         print('\n', end='')
 
-    def load(self, name, encrypted, rsapath=None):
+    def load(self, name, rsapath):
         # loads a specific password
-        try:
-            filepath = os.path.join(self.p.DATA_PATH, name)
-            with open(filepath, 'rb') as f:
-                item = pickle.load(f)
-                if encrypted:
-                    e = Encrypto(rsapath)
-                    decryptitem = e.decrypt(item)
-                    self[decryptitem.name] = decryptitem
-                else:
-                    self[item.name] = item
-        except Exception as e:
-            helptext.print_error(e)
+        filepath = os.path.join(self.p.DATA_PATH, name)
+        if rsapath:
+            e = Encrypto(rsapath)
+        item = None
+        with open(filepath, 'rb') as f:
+            if rsapath:
+                e = Encrypto(rsapath)
+                encitem = f.read()
+                item = json.loads(e.decrypt(encitem))
+            else:
+                item = json.load(f)
+        print('JSON.load in hashword.load:\n\n', item)
+        print(type(item))
+        if item:
+            self[name] = PwData(item)
 
     def populate(self, rsapath=None):
         # loads every saved password in one go
         manifest = Manifest()
-        items = dict()
+        e = None
+        if manifest.encrypted:
+            e = Encrypto(rsapath)
+
         for file in os.listdir(self.p.DATA_PATH):
             if not file.endswith('.json') and not file.endswith('.bak'):
                 filepath = os.path.join(self.p.DATA_PATH, file)
+                item = None
                 with open(filepath, 'rb') as f:
-                    items[file] = pickle.load(f)
-        if manifest.encrypted:
-            e = Encrypto(rsapath)
-            self = e.mass_decrypt(items.copy())
-        else:
-            self = items
+                    if manifest.encrypted:
+                        decitem = e.decrypt(f.read())
+                        item = json.loads(decitem)
+                    else:
+                        item = json.load(f)
+                print('JSON.load in hashword.populate:\n\n', item)
+                if item:
+                    self[file] = PwData(item)
 
     def rsa(self, force, verbose):
         self.populate()
         e = Encrypto()
-        if e.setup(force_overwrite=force,
-                   verbose=verbose):
-            # path to private rsa key should be constant unless user is
-            # deleting files while Hashword is running.
-            self.save("rsa_key_priv")
+        e.setup(force_overwrite=force, verbose=verbose)
+        # path to private rsa key should be constant unless user is
+        # deleting files while Hashword is running.
+        self.save("hashword_key_priv")
 
-    def save(self, rsapath):
-        dirpath = os.path.join(self.p.DATA_PATH)
+    def rsa_undo(self):
+        e = Encrypto()
+        e.undo()
+
+    def save(self, rsapath=None):
+        dirpath = self.p.DATA_PATH
         manifest = Manifest()
-        encdata = dict()
-        if manifest.encrypted:
+        e = None
+        if rsapath:
             e = Encrypto(rsapath)
-            encdata = e.mass_encrypt(self.copy())
         for key in self:
             filepath = os.path.join(dirpath, self[key].name)
-            manifest.add_pw(self[key].name)
+            if self[key].name not in manifest.passwords:
+                manifest.add_pw(self[key].name)
+            item = {
+                'algo': self[key].hash_alg,
+                'name': self[key].name,
+                'seed': self[key].seed,
+                'size': self[key].size
+            }
             with open(filepath, 'wb') as f:
                 if manifest.encrypted:
-                    pickle.dump(encdata[key], f)
+                    decitem = json.dumps(item).encode()
+                    f.write(e.encrypt(decitem))
                 else:
-                    pickle.dump(self[key], f)
+                    f.write(json.dumps(item).encode())
+
         manifest.close()
 
     def showpath(self):

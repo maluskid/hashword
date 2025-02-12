@@ -97,7 +97,7 @@ RSA_SETUP0 = "RSA Encryption setup:" \
     "\n\tprivate key will be provided and up to you to store wherever you" \
     "\n\tlike. This private key will need to be provided to access your" \
     "\n\tpasswords once encryption has been set up. Keep this key in a safe" \
-    "\n\tplace and do not lose it.\n"
+    "\n\tplace and do not lose it. This may take a while...\n"
 
 RSA_SETUP1 = "RSA Encryption setup:" \
     "\n\tEncryption setup is complete. Your private and public keys have" \

@@ -1,5 +1,4 @@
 import os
-import pickle
 import rsa
 import sys
 from cryptography.fernet import Fernet
@@ -12,12 +11,14 @@ from .manifest import Manifest
 KEY_LEN = 3072
 
 
-class Encrypto():
+class Encrypto:
 
     def __init__(self, key=None):
         self.p = FileSys()
         if key:
             self.privkey = self.load_privkey(key)
+        else:
+            self.privkey = None
 
     def load_fkey(self):
         fernet = None
@@ -33,16 +34,15 @@ class Encrypto():
             print(helptext.WARN_KEYS)
         return fernet
 
-    def load_privkey(keypath):
+    def load_privkey(self, keypath):
         if os.path.exists(keypath):
             with open(keypath, 'rb') as f:
-                return rsa.PrivateKey.load_pkcs1(f)
+                return rsa.PrivateKey.load_pkcs1(f.read())
         else:
             raise (FileNotFoundError)
 
     def setup(self, force_overwrite=False, verbose=False):
         print(helptext.RSA_SETUP0)
-        os.system("PAUSE")
         [pub, priv] = rsa.newkeys(KEY_LEN)
         self.privkey = priv
         fkey = Fernet.generate_key()
@@ -51,54 +51,30 @@ class Encrypto():
             print("Your private key:\n\n", priv.save_pkcs1().decode())
             input("\n\nPress any key to show your public key...")
             print("\n\nYour public key:\n\n", pub.save_pkcs1().decode())
-        try:
-            manifest = Manifest()
-            [ok, needs_encrypt] = manifest.add_encryption(force_overwrite)
-            manifest.close()
-            if ok:
-                with open("rsa_key_priv", 'wb') as p:
-                    p.write(priv.save_pkcs1())
-                with open("rsa_key_pub", 'wb') as p:
-                    p.write(pub.save_pkcs1())
-                with open(os.path.join(self.p.FERNET), 'wb') as f:
-                    encryptedfkey = rsa.encrypt(fkey, pub)
-                    f.write(encryptedfkey)
-                print(helptext.RSA_SETUP1)
-            return needs_encrypt
-        except Exception as e:
-            print("Error: {err} This occurred while saving keys, exiting."
-                  .format(err=e))
-            sys.exit(1)
+        # try:
+        m = Manifest()
+        ok = m.add_encryption(force_overwrite)
+        m.close()
+        if ok:
+            with open("hashword_key_priv", 'wb') as p:
+                p.write(priv.save_pkcs1())
+            with open("hashword_key_pub", 'wb') as p:
+                p.write(pub.save_pkcs1())
+            with open(self.p.FERNET, 'wb') as f:
+                encryptedfkey = rsa.encrypt(fkey, pub)
+                f.write(encryptedfkey)
+            print(helptext.RSA_SETUP1)
+        # except Exception as e:
+        #     print("Error: {err} This occurred while saving keys, exiting."
+        #           .format(err=e))
+        #     sys.exit(1)
 
-    def mass_encrypt(self, data):
-        ret = dict()
-        current = ''
-        try:
-            fernet = self.load_fkey()
-            for key in data:
-                current = key
-                ret[key] = fernet.encrypt(data[key])
-        except Exception as e:
-            helptext.print_error(e)
-            print("This occurred while encrypting {k}, exiting."
-                  .format(k=current))
-            sys.exit(1)
-        return ret
-
-    def mass_decrypt(self, data):
-        ret = dict()
-        current = ''
-        try:
-            fernet = self.load_fkey()
-            for key in data:
-                current = key
-                ret[key] = fernet.decrypt(data[key])
-        except Exception as e:
-            helptext.print_error(e)
-            print("This occurred while decrypting {k}, exiting."
-                  .format(k=current))
-            sys.exit(1)
-        return ret
+    def mass_encrypt(self, targets):
+        out = dict()
+        fernet = self.load_fkey()
+        for key in targets:
+            out[key] = fernet.encrypt(targets[key])
+        return out
 
     def encrypt(self, target):
         try:
@@ -110,6 +86,13 @@ class Encrypto():
                 .format(err=e, t=target))
             sys.exit(1)
 
+    def mass_decrypt(self, targets):
+        out = dict()
+        fernet = self.load_fkey()
+        for key in targets:
+            out[key] = fernet.decrypt(targets[key])
+        return out
+
     def decrypt(self, target):
         try:
             fernet = self.load_fkey()
@@ -119,3 +102,11 @@ class Encrypto():
                 "Error: {err} This occurred while decrypting {t}, exiting."
                 .format(err=e, t=target))
             sys.exit(1)
+
+    def undo(self):
+        m = Manifest()
+        m.encrypted = False
+        m.close()
+        os.remove('./hashword_key_pub')
+        os.remove('./hashword_key_priv')
+        os.remove(self.p.FERNET)
