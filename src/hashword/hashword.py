@@ -81,31 +81,24 @@ class HashWord(dict):
         except ValueError as e:
             helptext.print_error(e)
             helptext.print_usage(True)
-        except Exception as e:
-            helptext.print_error(e)
         else:
             filepath = os.path.join(self.p.DATA_PATH, targ)
-            try:
-                os.remove(filepath)
-                manifest.close()
-            except Exception as e:
-                helptext.print_error(e)
+            os.remove(filepath)
+            manifest.close()
 
     def get(self, target, rsapath):
-        try:
-            manifest = Manifest()
-            if target in manifest.passwords:
-                name = target
-            elif target in manifest.aliases:
-                name = manifest.aliases[target]
-            else:
-                raise ValueError("""Value not found in manifest. A broken
-                password manifest can be fixed using the `audit` command.""")
-        except Exception as e:
-            helptext.print_error(e)
-        else:
+        manifest = Manifest()
+        if target in manifest.passwords:
+            name = target
             self.load(name, rsapath)
             return (self[name].getpw())
+        elif target in manifest.aliases:
+            name = manifest.aliases[target]
+            self.load(name, rsapath)
+            return (self[name].getpw())
+        else:
+            print("""Value not found in manifest. A broken
+            password manifest can be fixed using the `audit` command.""")
 
     def list_self(self):
         manifest = Manifest()
@@ -139,8 +132,6 @@ class HashWord(dict):
                 item = json.loads(e.decrypt(encitem))
             else:
                 item = json.load(f)
-        print('JSON.load in hashword.load:\n\n', item)
-        print(type(item))
         if item:
             self[name] = PwData(item)
 

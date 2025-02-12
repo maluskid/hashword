@@ -15,13 +15,12 @@ class Manifest:
             with open(self.p.M_PATH, 'r+') as m:
                 try:
                     savedm = json.load(m)
+                    self.aliases.update(savedm["aliases"])
+                    self.passwords = savedm["passwords"].copy()
+                    self.encrypted = savedm["encrypted"]
                 except json.JSONDecodeError as e:
                     print("Error: {err} encountered decoding manifest.json"
                           .format(err=e))
-                self.aliases.update(savedm["aliases"])
-                self.passwords = savedm["passwords"].copy()
-                try:
-                    self.encrypted = savedm["encrypted"]
                 except KeyError:
                     if os.path.exists(self.p.FERNET):
                         # If a Fernet key has been saved,
@@ -47,7 +46,7 @@ class Manifest:
         if target in self.passwords:
             self.aliases[alias] = target
         else:
-            raise (ValueError("Target password not in list."))
+            raise (ValueError("Element not in list."))
 
     def rm_alias(self, alias, verbose=False):
         pw = self.aliases.pop(alias)

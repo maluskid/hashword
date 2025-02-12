@@ -91,28 +91,17 @@ if __name__ == "__main__":
     [argslist, optslist] = parse_args()
     match argslist[0]:
         case "add":
-            try:
-                [algo, name, seed, size, rsapath] = execute_add(optslist)
-                h.create(algo, name, seed, size, rsapath)
-            except Exception as e:
-                perror(e)
+            [algo, name, seed, size, rsapath] = execute_add(optslist)
+            h.create(algo, name, seed, size, rsapath)
             name = optslist["name"]
             print("Hashword {n} successfully added."
                   .format(n=name))
         case "alias":
-            try:
-                h.alias(argslist[1], argslist[2])
-            except Exception as e:
-                perror(e)
-                pusage()
+            h.alias(argslist[1], argslist[2])
         case "list":
             h.list_self()
         case "rm":
-            try:
-                h.delete(argslist[1])
-            except Exception as e:
-                perror(e)
-                pusage()
+            h.delete(argslist[1])
         case "rsa":
             v = False
             if optslist["verbose"]:
@@ -122,11 +111,8 @@ if __name__ == "__main__":
             # except Exception as e:
             #     perror(e)
         case "data":
-            try:
-                print("Password data saved at {location}".format(
-                    location=h.showpath()))
-            except Exception as e:
-                perror(e)
+            print("Password data saved at {location}".format(
+                location=h.showpath()))
         case "--help":
             argslist.pop(0)
             phelp(argslist)
@@ -138,9 +124,5 @@ if __name__ == "__main__":
         case 'undo':
             h.rsa_undo()
             h.audit()
-
         case arg:
-            try:
-                print(h.get(arg, optslist["keypath"]))
-            except Exception as e:
-                perror(e)
+            print(h.get(arg, optslist["keypath"]))

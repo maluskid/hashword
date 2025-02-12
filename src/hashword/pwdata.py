@@ -26,6 +26,8 @@ class PwData:
         self.name = data['name']
         self.seed = data['seed']
         self.size = data['size']
+        if not self.seed:
+            self.seed = seed_generator()
 
     def getpw(self, verbose=False):
         h = None

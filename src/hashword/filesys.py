@@ -8,7 +8,10 @@ path = os.path.join('/home', user, '.hashword/')
 class FileSys:
 
     def __init__(self):
-        self.DATA_PATH = os.path.join(path, 'Data/')
+        # Main data path
+        # self.DATA_PATH = os.path.join(path, 'Data/')
+        # Alternate testing data path
+        self.DATA_PATH = os.path.join(path, 'Testing/')
         self.KEY_PATH = os.path.join(path, 'Keys/')
         self.M_PATH = os.path.join(self.DATA_PATH, 'manifest.json')
         self.FERNET = os.path.join(self.KEY_PATH, user)
