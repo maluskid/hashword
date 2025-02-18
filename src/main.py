@@ -55,6 +55,8 @@ def parse_args():
                                     errormsg = "Option {f} {s} not recognized."
                                     errormsg.format(f=first, s=second)
                                     raise (ValueError(errormsg))
+            case [_, "transfer", *args] if len(args) < 2:
+                raise (RuntimeError("Remote user and host must be supplied."))
             case [_, *args] if len(args) < 1:
                 raise (RuntimeError("No arguments detected."))
             case [_, *args] if len(args) >= 1:
@@ -68,8 +70,19 @@ def parse_args():
                             if args:
                                 options["keypath"] = args.pop(0)
                             else:
-                                errormsg = "Invalid use of `-k` flag."
-                                raise (ValueError(errormsg))
+                                emsg = "Invalid use of `-k` flag."
+                                raise (ValueError(emsg))
+                        case 'rsa':
+                            if args:
+                                arg = args.pop(0)
+                                if arg == '--setup':
+                                    argslist.append('rsa_setup')
+                                else:
+                                    emsg = "Invalid argument rsa {a}.".format(
+                                        a=arg)
+                                    raise (ValueError(emsg))
+                            else:
+                                argslist.append('rsa')
                         case val:
                             argslist.append(val)
             case _:
@@ -103,26 +116,23 @@ if __name__ == "__main__":
         case "rm":
             h.delete(argslist[1])
         case "rsa":
-            v = False
-            if optslist["verbose"]:
-                v = True
-            # try:
-            h.rsa(optslist["force"], optslist["verbose"])
-            # except Exception as e:
-            #     perror(e)
+            h.rsa_toggle(optslist["keypath"])
+        case "rsa_setup":
+            h.rsa_setup(optslist["force"], optslist["verbose"])
         case "data":
             print("Password data saved at {location}".format(
                 location=h.showpath()))
         case "--help":
             argslist.pop(0)
             phelp(argslist)
-        case 'audit':
+        case "audit":
             print("Beginning audit...")
             h.audit(optslist["keypath"])
             print("Audit complete!")
             h.list_self()
-        case 'undo':
-            h.rsa_undo()
-            h.audit()
+        case "transfer":
+            user = argslist[1]
+            host = argslist[2]
+            print("Transferring files to {u}@{h}.".format(u=user, h=host))
         case arg:
             print(h.get(arg, optslist["keypath"]))

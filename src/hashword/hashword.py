@@ -27,11 +27,14 @@ class HashWord(dict):
         password will need to be reset.
         '''
         manifest = Manifest()
+        if not manifest.encrypted and os.path.exists(self.p.FERNET):
+            print("Discrepancy found with encryption settings...")
         self.populate(rsapath)
         old = deepcopy(self)
         old_man = deepcopy(manifest)
         for item in old_man.passwords:
             print("Checking password", item)
+            old.pop(item)
             if item not in self and item in manifest.passwords:
                 print(item, "is an orphaned password...")
                 manifest.audit(item)
@@ -40,7 +43,7 @@ class HashWord(dict):
             if val not in self and key in manifest.aliases:
                 print(key, "is an orphaned alias...")
                 manifest.audit(key)
-        for key in old.keys():
+        for key in old:
             print("Ensuring manifest entry for", key)
             if key not in manifest.passwords:
                 print(key, "not recorded.")
@@ -122,12 +125,16 @@ class HashWord(dict):
     def load(self, name, rsapath):
         # loads a specific password
         filepath = os.path.join(self.p.DATA_PATH, name)
-        if rsapath:
+        manifest = Manifest()
+        e = None
+        if manifest.encrypted and rsapath:
             e = Encrypto(rsapath)
+        elif manifest.encrypted:
+            print("No key path provided, looking in .hashword/Keys directory.")
+            e = Encrypto(self.p.PRIV_KEY_PATH)
         item = None
         with open(filepath, 'rb') as f:
-            if rsapath:
-                e = Encrypto(rsapath)
+            if e:
                 encitem = f.read()
                 item = json.loads(e.decrypt(encitem))
             else:
@@ -137,60 +144,87 @@ class HashWord(dict):
 
     def populate(self, rsapath=None):
         # loads every saved password in one go
-        manifest = Manifest()
         e = None
-        if manifest.encrypted:
+        manifest = Manifest()
+        encitems = dict()
+        if manifest.encrypted and rsapath:
             e = Encrypto(rsapath)
+        elif manifest.encrypted:
+            print("No key path provided, looking in .hashword/Keys directory.")
+            e = Encrypto(self.p.PRIV_KEY_PATH)
 
         for file in os.listdir(self.p.DATA_PATH):
             if not file.endswith('.json') and not file.endswith('.bak'):
                 filepath = os.path.join(self.p.DATA_PATH, file)
-                item = None
+                decitem = None
                 with open(filepath, 'rb') as f:
                     if manifest.encrypted:
-                        decitem = e.decrypt(f.read())
-                        item = json.loads(decitem)
+                        encitems[file] = f.read()
                     else:
-                        item = json.load(f)
-                print('JSON.load in hashword.populate:\n\n', item)
-                if item:
-                    self[file] = PwData(item)
+                        decitem = json.load(f)
+                        self[file] = PwData(decitem)
+        if manifest.encrypted:
+            decitems = e.mass_decrypt(encitems)
+            for key in decitems:
+                item = json.loads(decitems[key])
+                self[key] = PwData(item)
 
-    def rsa(self, force, verbose):
+    def rsa_setup(self, force, verbose):
         self.populate()
         e = Encrypto()
         e.setup(force_overwrite=force, verbose=verbose)
         # path to private rsa key should be constant unless user is
         # deleting files while Hashword is running.
-        self.save("hashword_key_priv")
+        self.save(self.p.KEY_PATH)
 
-    def rsa_undo(self):
-        e = Encrypto()
-        e.undo()
+    def rsa_toggle(self, rsapath):
+        manifest = Manifest()
+        self.populate(rsapath)
+        if manifest.encrypted:
+            manifest.encrypted = False
+        else:
+            manifest.encrypted = True
+        self.save(rsapath)
 
     def save(self, rsapath=None):
         dirpath = self.p.DATA_PATH
         manifest = Manifest()
         e = None
-        if rsapath:
+        if manifest.encrypted and rsapath:
             e = Encrypto(rsapath)
-        for key in self:
-            filepath = os.path.join(dirpath, self[key].name)
-            if self[key].name not in manifest.passwords:
-                manifest.add_pw(self[key].name)
-            item = {
-                'algo': self[key].hash_alg,
-                'name': self[key].name,
-                'seed': self[key].seed,
-                'size': self[key].size
-            }
-            with open(filepath, 'wb') as f:
-                if manifest.encrypted:
-                    decitem = json.dumps(item).encode()
-                    f.write(e.encrypt(decitem))
-                else:
-                    f.write(json.dumps(item).encode())
+        elif manifest.encrypted:
+            print("No key path provided, looking in .hashword/Keys directory.")
+            e = Encrypto(self.p.PRIV_KEY_PATH)
 
+        if e:
+            items = dict()
+            for key in self:
+                if self[key].name not in manifest.passwords:
+                    manifest.add_pw(self[key].name)
+                items[self[key].name] = json.dumps({
+                    'algo': self[key].hash_alg,
+                    'name': self[key].name,
+                    'seed': self[key].seed,
+                    'size': self[key].size
+                }).encode()
+            encitems = e.mass_encrypt(items)
+            for key in encitems:
+                filepath = os.path.join(dirpath, key)
+                with open(filepath, 'wb') as f:
+                    f.write(encitems[key])
+        else:
+            for key in self:
+                filepath = os.path.join(dirpath, self[key].name)
+                if self[key].name not in manifest.passwords:
+                    manifest.add_pw(self[key].name)
+                item = {
+                    'algo': self[key].hash_alg,
+                    'name': self[key].name,
+                    'seed': self[key].seed,
+                    'size': self[key].size
+                }
+                with open(filepath, 'wb') as f:
+                    f.write(json.dumps(item).encode())
         manifest.close()
 
     def showpath(self):

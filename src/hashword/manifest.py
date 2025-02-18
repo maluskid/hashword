@@ -11,25 +11,18 @@ class Manifest:
         self.passwords = list()
         self.aliases = dict()
         self.encrypted = False
-        if os.path.getsize(self.p.M_PATH) > 0:
+        if os.path.exists(self.p.FERNET):
+            # If a Fernet key has been saved,
+            # encryption has been set up.
+            self.encrypted = True
+        if os.path.exists(self.p.M_PATH):
             with open(self.p.M_PATH, 'r+') as m:
-                try:
-                    savedm = json.load(m)
-                    self.aliases.update(savedm["aliases"])
-                    self.passwords = savedm["passwords"].copy()
-                    self.encrypted = savedm["encrypted"]
-                except json.JSONDecodeError as e:
-                    print("Error: {err} encountered decoding manifest.json"
-                          .format(err=e))
-                except KeyError:
-                    if os.path.exists(self.p.FERNET):
-                        # If a Fernet key has been saved,
-                        # hasn't been set up.
-                        self.encrypted = True
-                    else:
-                        self.encrypted = False
-        elif os.path.getsize(self.p.DATA_PATH) < 3:
-            # If DATA_PATH is empty or nearly empty, it is likely there are no
+                savedm = json.load(m)
+                self.aliases.update(savedm["aliases"])
+                self.passwords = savedm["passwords"].copy()
+                self.encrypted = savedm["encrypted"]
+        elif not os.listdir(self.p.DATA_PATH):
+            # If DATA_PATH is empty, it is likely there are no
             # saved passwords and the warning is unneccessary
             print(helptext.WARN_MANIFEST)
 
@@ -64,7 +57,7 @@ class Manifest:
         match target:
             case al if al in self.aliases:
                 pw = self.aliases[al]
-                self.rm_alias(al, True)
+                self.rm_alias(al)
                 return self.rm_pw(pw)
             case pw if pw in self.passwords:
                 self.passwords.remove(pw)
@@ -75,7 +68,7 @@ class Manifest:
                             keylist.append(key)
                     if keylist:
                         for a in keylist:
-                            self.rm_alias(a, True)
+                            self.rm_alias(a)
                 return pw
             case _:
                 raise (ValueError("Element not in list."))
@@ -83,8 +76,7 @@ class Manifest:
     def add_encryption(self, force):
         if self.encrypted and not force:
             print(helptext.WARN_RSA_OVERWRITE)
-            # CHANGE TO FALSE LATER
-            return True
+            return False
         else:
             if force:
                 print("Overwriting previous key, force flag was set.")
@@ -100,11 +92,10 @@ class Manifest:
         '''
         match target:
             case al if al in self.aliases:
-                self.aliases.pop(al)
-                print("Orphaned alias removed.")
+                self.rm_alias(al, True)
             case pw if pw in self.passwords:
                 self.passwords.remove(pw)
-                print("Orphaned password removed.")
+                print("Orphaned password removed...")
                 print("Checking for aliases of", pw)
                 keylist = []
                 if pw in self.aliases.values():
@@ -115,6 +106,6 @@ class Manifest:
                     print("Removing aliases:")
                     for a in keylist:
                         print(a)
-                        self.aliases.pop(a)
+                        self.rm_alias(a)
             case _:
                 raise (ValueError("Element not in list."))

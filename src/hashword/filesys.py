@@ -3,6 +3,7 @@ import os
 
 user = getpass.getuser().strip()
 path = os.path.join('/home', user, '.hashword/')
+keypath = os.path.join(path, 'Keys/')
 
 
 class FileSys:
@@ -12,14 +13,15 @@ class FileSys:
         # self.DATA_PATH = os.path.join(path, 'Data/')
         # Alternate testing data path
         self.DATA_PATH = os.path.join(path, 'Testing/')
-        self.KEY_PATH = os.path.join(path, 'Keys/')
+        self.PRIV_KEY_PATH = os.path.join(path, 'Keys/', 'hashword_key_priv')
+        self.PUB_KEY_PATH = os.path.join(path, 'Keys/', 'hashword_key_pub')
         self.M_PATH = os.path.join(self.DATA_PATH, 'manifest.json')
-        self.FERNET = os.path.join(self.KEY_PATH, user)
+        self.FERNET = os.path.join(path, 'Keys/', user)
         # create relevant directories and files if they don't exist
         if not os.path.exists(self.DATA_PATH):
             os.makedirs(os.path.join(self.DATA_PATH))
-        if not os.path.exists(self.KEY_PATH):
-            os.makedirs(os.path.join(self.KEY_PATH))
+        if not os.path.exists(keypath):
+            os.makedirs(os.path.join(keypath))
         if not os.path.exists(self.M_PATH):
             with open(self.M_PATH, 'x'):
                 print("""
