@@ -3,7 +3,9 @@ from .pwdata import PwData
 from .manifest import Manifest
 from .filesys import FileSys
 from .rsaencrypt import Encrypto
+from .transfer import transfer
 from copy import deepcopy
+from cryptography.fernet import InvalidToken
 import os
 import json
 
@@ -12,6 +14,7 @@ class HashWord(dict):
 
     def __init__(self):
         self.p = FileSys()
+        self.p.create()
 
     def alias(self, target, nickname):
         manifest = Manifest()
@@ -27,28 +30,46 @@ class HashWord(dict):
         password will need to be reset.
         '''
         manifest = Manifest()
-        if not manifest.encrypted and os.path.exists(self.p.FERNET):
-            print("Discrepancy found with encryption settings...")
-        self.populate(rsapath)
-        old = deepcopy(self)
-        old_man = deepcopy(manifest)
-        for item in old_man.passwords:
-            print("Checking password", item)
-            old.pop(item)
-            if item not in self and item in manifest.passwords:
-                print(item, "is an orphaned password...")
-                manifest.audit(item)
-        for key, val in old_man.aliases.items():
-            print("Checking alias", key, "of", val)
-            if val not in self and key in manifest.aliases:
-                print(key, "is an orphaned alias...")
-                manifest.audit(key)
-        for key in old:
-            print("Ensuring manifest entry for", key)
-            if key not in manifest.passwords:
-                print(key, "not recorded.")
-                manifest.add_pw(key)
-                print("Entry for", key, "added to manifest.")
+        try:
+            self.populate(rsapath)
+        except InvalidToken:
+            print(helptext.AUDIT_ENCRYPTION_DISCREPANCY)
+            manifest.encrypted = False
+            # If fernet.InvalidToken was raised, hashword is trying to decrypt
+            # and failing. Possibly due to passwords being unencrypted.
+            manifest.close()
+            self.populate(rsapath)
+            manifest = Manifest()
+        except json.decoder.JSONDecodeError:
+            print(helptext.AUDIT_ENCRYPTION_DISCREPANCY)
+            manifest.encrypted = True
+            # If JSONDecodeError was raised, hashword is trying to deserialize
+            # a file which isn't deserializable. Possibly an encrypted file.
+            manifest.close()
+            self.populate()
+            manifest = Manifest()
+        if manifest.passwords or self:
+            old = deepcopy(self)
+            old_man = deepcopy(manifest)
+            for item in old_man.passwords:
+                print("Checking password", item)
+                old.pop(item)
+                if item not in self and item in manifest.passwords:
+                    print(item, "is an orphaned password...")
+                    manifest.audit(item)
+            for key, val in old_man.aliases.items():
+                print("Checking alias", key, "of", val)
+                if val not in self and key in manifest.aliases:
+                    print(key, "is an orphaned alias...")
+                    manifest.audit(key)
+            for key in old:
+                print("Ensuring manifest entry for", key)
+                if key not in manifest.passwords:
+                    print(key, "not recorded.")
+                    manifest.add_pw(key)
+                    print("Entry for", key, "added to manifest.")
+        else:
+            print("Nothing to audit.")
         manifest.close()
 
     def create(self, algo, name, seed, size, rsapath=None):
@@ -100,8 +121,8 @@ class HashWord(dict):
             self.load(name, rsapath)
             return (self[name].getpw())
         else:
-            print("""Value not found in manifest. A broken
-            password manifest can be fixed using the `audit` command.""")
+            print("""Value not found in manifest. Use the `audit` command to
+            help fix a broken manifest.""")
 
     def list_self(self):
         manifest = Manifest()
@@ -154,7 +175,7 @@ class HashWord(dict):
             e = Encrypto(self.p.PRIV_KEY_PATH)
 
         for file in os.listdir(self.p.DATA_PATH):
-            if not file.endswith('.json') and not file.endswith('.bak'):
+            if not file.endswith(('.json', '.bak', '.transfer')):
                 filepath = os.path.join(self.p.DATA_PATH, file)
                 decitem = None
                 with open(filepath, 'rb') as f:
@@ -181,9 +202,12 @@ class HashWord(dict):
         manifest = Manifest()
         self.populate(rsapath)
         if manifest.encrypted:
+            print("Unencrypting passwords...")
             manifest.encrypted = False
         else:
+            print("Encrypting passwords...")
             manifest.encrypted = True
+        manifest.close()
         self.save(rsapath)
 
     def save(self, rsapath=None):
@@ -229,3 +253,6 @@ class HashWord(dict):
 
     def showpath(self):
         return self.p.DATA_PATH
+
+    def connect(self, user, host):
+        transfer(user, host)

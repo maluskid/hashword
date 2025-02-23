@@ -2,14 +2,19 @@
 # to reduce clutter and make consistent formatting easier.
 
 # Important help text below ---------------------------------------------------
-USAGE = "Usage:\n\thashword <foo>\t\t\tshow hash for <foo>" \
-    "\n\thashword add\t\t\tadd new password" \
-    "\n\thashword alias <foo> <alias>\talias <foo> as <alias>" \
-    "\n\thashword audit\t\t\taudits saved aliases and passwords" \
-    "\n\thashword data\t\t\tshow path to `/.hashword/data`" \
-    "\n\thashword list\t\t\tlist saved passwords" \
-    "\n\thashword rm <foo>\t\tremove <foo>" \
-    "\n\thashword rsa\t\t\tmanage RSA keys\n\n"
+USAGE = """
+Usage:
+    hashword <command>
+
+    hashword <foo>                  show hash for <foo>
+    hashword add                    add new password
+    hashword alias <foo> <alias>    alias <foo> as <alias>
+    hashword audit                  audits saved aliases and passwords
+    hashword data                   show path to `/.hashword/data`
+    hashword list                   list saved passwords
+    hashword rm <foo>               remove <foo>
+    hashword rsa                    manage RSA keys
+"""
 
 NO_ENTRY = "\t\tThere isn't a help entry written for that yet . If you have" \
     "\n\tsuggestions for\nimproving Hashword or find any issues, report them" \
@@ -61,6 +66,10 @@ AUDIT_TEXT = "Usage: hashword audit\n" \
     "\n\tpassword file has been removed without the use of the `rm` command," \
     "\n\tthis command will fix the broken manifest.\n"
 
+AUDIT_ENCRYPTION_DISCREPANCY = "Error attempting to load files. Manifest" \
+    "\n\tmay have invalid encryption setting. Toggling manifest and trying" \
+    "\n\tagain.\n"
+
 DATA_TEXT = "Usage: hashword data\n" \
     "\n\tThis command will display path to the data directory where all" \
     "\n\tpassword data is stored. If RSA encryption hasn't been set up," \
@@ -78,45 +87,67 @@ RM_TEXT = "Usage: hashword rm <foo>\n" \
     "\n\tare named by the password they refer to. Hashword encrypts all" \
     "\n\tpassword files with your RSA public key before saving them.\n"
 
-RSA_TEXT = "Usage: hashword rsa\n" \
-    "\n\tThis software uses RSA keys to verify your identity and protect" \
-    "\n\tyour passwords. The rsa command will begin a step by step process" \
-    "\n\tin the terminal to complete first time setup or manage RSA keys." \
-    "\n\tPasswords are encrypted using your public key. In order to decrypt" \
-    "\n\tthem, you must supply your private key. The first time you use this" \
-    "\n\tprogram, you will be guided through RSA key setup. When prompted," \
-    "\n\tsupply the path to your private key to decrypt your passwords.\n\n" \
-    "\n\tFlags:" \
-    "\n\t\t-v, --verbose\t\tdisplay rsa public and private key in STDOUT." \
-    "\n\t\t-f --force\t\tforce RSA setup to overwrite a previously saved key."
+RSA_TEXT = """
+Usage: hashword rsa
+
+    This software uses RSA keys to verify your identity and protect your
+    passwords. The rsa command will begin a step by step process in the
+    terminal to complete first time setup or manage RSA keys. Passwords are
+    encrypted using your public key. In order to decrypt them, you must supply
+    your private key. The first time you use this program, you will be guided
+    through RSA key setup. When prompted, supply the path to your private key
+    to decrypt your passwords.
+
+Flags:
+        -v, --verbose       display rsa public and private key in STDOUT.
+        -f --force      force RSA setup to overwrite a previously saved key.
+"""
 
 # RSA Encryption setup messages below _________________________________________
-RSA_SETUP0 = "RSA Encryption setup:" \
-    "\n\tHashword will create a private and public RSA key for you. The" \
-    "\n\tpublic key will be stored in the `.hashword/Keys` directory. The" \
-    "\n\tprivate key will be provided and up to you to store wherever you" \
-    "\n\tlike. This private key will need to be provided to access your" \
-    "\n\tpasswords once encryption has been set up. Keep this key in a safe" \
-    "\n\tplace and do not lose it. This may take a while...\n"
+RSA_SETUP0 = """
+RSA Encryption setup: Hashword will create a private and public RSA key for
+you. The public key will be stored in the `.hashword/Keys` directory. The
+private key will be provided and up to you to store wherever you like. This
+private key will need to be provided to access your passwords once encryption
+has been set up. Keep this key in a safe place and do not lose it. This may
+take a while...\n"""
 
-RSA_SETUP1 = "RSA Encryption setup:" \
-    "\n\tEncryption setup is complete. Your private and public keys have" \
-    "\n\tbeen saved in the current working directory.\n"
+RSA_SETUP1 = """
+RSA Encryption setup: Encryption setup is complete. Your private and public
+keys have been saved in the current working directory.
+"""
 
 # Warning & error messages below ----------------------------------------------
 WARN_KEYS = "\nWARN: Using this program without encryption exposes your" \
     "\n\tsaved passwords to possible theft. If this is your first time using" \
     "\n\tthis program, use `hashword rsa` to set up encryption.\n"
 
-WARN_MANIFEST = "\nWARN: manifest.json is empty, you may need to restore it." \
-    "\n\tUse the `audit` command to fix a broken manifest.\n"
+WARN_MANIFEST_EMPTY = """
+WARN: manifest is empty, you may need to restore it. Use the `audit` command to
+fix a broken manifest.
+"""
 
-WARN_RSA_OVERWRITE = "\nWARN: Rsa encryption has already been set up and" \
-    "\n\ta previously saved encryption key exists. If this key is deleted" \
-    "\n\tit may make any encrypted passwords irretrievable. Use the `-f`" \
-    "\n\tflag to force the setup function to overwrite the old key.\n"
+WARN_MANIFEST_EXISTS = """
+WARN: manifest not found. A new manifest has been created, you may need to
+restore it. Use the `audit` command to fix a broken manifest.
+"""
 
-ERROR_MSG = "Error: {err} Use `hashword --help` for more information.\n"
+WARN_MANIFEST_LOAD = """
+WARN: unable to load manifest. A new manifest has been created, you may need to
+restore it. Use the `audit` command to fix a broken manifest.
+"""
+
+
+WARN_RSA_OVERWRITE = """
+WARN: Rsa encryption has already been set up and a previously saved encryption
+key exists. If this key is deleted it may make any encrypted passwords
+irretrievable. Use the `-f` flag to force the setup function to overwrite the
+old key.
+"""
+
+ERROR_MSG = """
+Error: {err} Use `hashword --help` for more information.
+"""
 
 
 # Helper functions for printing various important messages below --------------
@@ -127,16 +158,15 @@ def print_error(error):
 def print_usage(addendum=False):
     print(USAGE)
     if addendum:
-        print("\tFor help with a specific command, "
-              + "run `hashword --help <command>`\n\t"
-              + "For more in depth help in general, run "
-              + "`hashword --help all`\n")
+        print("""
+    For help with a specific command, run `hashword --help <command>`
+    For more in depth help in general, run `hashword --help all`
+""")
 
 
 def display_help(args):
     match len(args):
         case 0:
-            print("hashword <command>")
             print_usage(addendum=True)
         case 1:
             match args[0]:

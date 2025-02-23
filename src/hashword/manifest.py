@@ -11,22 +11,11 @@ class Manifest:
         self.passwords = list()
         self.aliases = dict()
         self.encrypted = False
-        if os.path.exists(self.p.FERNET):
-            # If a Fernet key has been saved,
-            # encryption has been set up.
-            self.encrypted = True
-        if os.path.exists(self.p.M_PATH):
-            with open(self.p.M_PATH, 'r+') as m:
-                savedm = json.load(m)
-                self.aliases.update(savedm["aliases"])
-                self.passwords = savedm["passwords"].copy()
-                self.encrypted = savedm["encrypted"]
-        elif not os.listdir(self.p.DATA_PATH):
-            # If DATA_PATH is empty, it is likely there are no
-            # saved passwords and the warning is unneccessary
-            print(helptext.WARN_MANIFEST)
+        self.load_self()
 
     def close(self):
+        '''Saves the current values in manifest object to the
+        data directory.'''
         with open(self.p.M_PATH, 'w+') as m:
             msaver = {
                 "encrypted": self.encrypted,
@@ -34,6 +23,38 @@ class Manifest:
                 "aliases": self.aliases
             }
             json.dump(msaver, m)
+
+    def load_self(self):
+        '''
+        Function which checks if a manifest exists and creates a new blank one
+        if it doesn't. If it does exist, it will attempt to load the data in
+        the manifest. If an error occurs, it will prompt user to run the
+        `audit` command and create a new blank manifest.
+        '''
+        if os.path.exists(self.p.M_PATH):
+            if os.stat(self.p.M_PATH).st_size > 0:
+                try:
+                    with open(self.p.M_PATH, 'r+') as m:
+                        savedm = json.load(m)
+                    self.aliases.update(savedm["aliases"])
+                    self.passwords = savedm["passwords"].copy()
+                    self.encrypted = savedm["encrypted"]
+                except json.decoder.JSONDecodeError:
+                    print(helptext.WARN_MANIFEST_LOAD)
+                    os.remove(self.p.M_PATH)
+                    self.close()
+            else:
+                with os.scandir(self.p.DATA_PATH) as data:
+                    # Only print warning if there are files
+                    if any(data):
+                        print(helptext.WARN_MANIFEST_EMPTY)
+                self.close()
+        else:
+            with os.scandir(self.p.DATA_PATH) as data:
+                # Only print warning if there are files
+                if any(data):
+                    print(helptext.WARN_MANIFEST_EXISTS)
+            self.close()
 
     def add_alias(self, target, alias):
         if target in self.passwords:
