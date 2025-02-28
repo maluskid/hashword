@@ -1,5 +1,7 @@
 import os
+import getpass
 
+USERNAME = getpass.getuser()
 USER = os.path.expanduser('~')
 PATH = os.path.join(USER, '.hashword')
 KEYPATH = os.path.join(PATH, 'Keys')
@@ -17,7 +19,7 @@ class FileSys:
         self.SSH_PATH = os.path.join(KEYPATH, '.ssh')
         self.TRANSFER_PATH = os.path.join('.hashword', 'Transfer')
         self.M_PATH = os.path.join(self.DATA_PATH, '.manifest.json')
-        self.FERNET = os.path.join(PATH, 'Keys', USER)
+        self.FERNET = os.path.join(PATH, 'Keys', USERNAME)
 
     def create(self):
         # create relevant directories and files if they don't exist

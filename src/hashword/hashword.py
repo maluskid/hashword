@@ -196,7 +196,7 @@ class HashWord(dict):
         e.setup(force_overwrite=force, verbose=verbose)
         # path to private rsa key should be constant unless user is
         # deleting files while Hashword is running.
-        self.save(self.p.KEY_PATH)
+        self.save(self.p.PRIV_KEY_PATH)
 
     def rsa_toggle(self, rsapath):
         manifest = Manifest()
