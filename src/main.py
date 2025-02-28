@@ -133,7 +133,6 @@ if __name__ == "__main__":
         case "transfer":
             user = argslist[1]
             host = argslist[2]
-            print("Transferring files to {u}@{h}.".format(u=user, h=host))
             h.connect(user, host)
         case arg:
             print(h.get(arg, optslist["keypath"]))

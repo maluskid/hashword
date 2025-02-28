@@ -1,4 +1,3 @@
-import getpass
 import os
 
 USER = os.path.expanduser('~')
@@ -16,6 +15,7 @@ class FileSys:
         self.PRIV_KEY_PATH = os.path.join(KEYPATH, 'hashword_key_priv')
         self.PUB_KEY_PATH = os.path.join(KEYPATH, 'hashword_key_pub')
         self.SSH_PATH = os.path.join(KEYPATH, '.ssh')
+        self.TRANSFER_PATH = os.path.join('.hashword', 'Transfer')
         self.M_PATH = os.path.join(self.DATA_PATH, '.manifest.json')
         self.FERNET = os.path.join(PATH, 'Keys', USER)
 
