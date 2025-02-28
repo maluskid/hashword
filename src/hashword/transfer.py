@@ -7,13 +7,13 @@ from .filesys import FileSys
 def get_remote_home_directory(ssh_client):
     commands = ["echo $HOME", "echo %USERPROFILE%", "pwd"]
     for command in commands:
-        try:
-            stdin, stdout, stderr = ssh_client.exec_command(command)
-            home_dir = stdout.read().decode().strip()
-            if home_dir:
-                return home_dir
-        except Exception as e:
-            print(f"Error executing command '{command}': {e}")
+        # try:
+        stdin, stdout, stderr = ssh_client.exec_command(command)
+        home_dir = stdout.read().decode().strip()
+        if home_dir:
+            return home_dir
+        # except Exception as e:
+        #     print(f"Error executing command '{command}': {e}")
     return None
 
 
@@ -21,34 +21,36 @@ def copy_local_files(path, tpath):
     for file in os.listdir(path):
         if not file.endswith(('.json', '.bak', '.transfer')):
             filepath = os.path.join(path, file)
-            newname = str(file, '.transfer')
+            newname = str(file + '.transfer')
             transferpath = os.path.join(tpath, newname)
             shutil.copyfile(filepath, transferpath)
 
 
 def ensure_remote_dir(path, sftp):
-    tpath = os.path.join(path, '.hashword', 'Transfer')
-    try:
-        sftp.mkdir(tpath)
-    except IOError as e:
-        if e.errno == 17:
-            pass
-        else:
-            print(f"Err sftp: {e}")
-    except Exception as e:
-        print(f"Err sftp: {e}")
+    tpath = os.path.join(path, '.hashword')
+    # try:
+    sftp.mkdir(tpath)
+    tpath = os.path.join(tpath, 'Transfer')
+    sftp.mkdir(tpath)
+    # except IOError as e:
+    #     if e.errno == 17:
+    #         pass
+    #     else:
+    #         print(f"Err sftp: {e}")
+    # except Exception as e:
+    #     print(f"Err sftp: {e}")
     return tpath
 
 
 def sftp_transfer(path, tpath, sftp):
     for file in os.listdir(path):
         if file.endswith('.transfer'):
-            try:
-                filepath = os.path.join(path, file)
-                transferpath = os.path.join(tpath, file)
-                sftp.put(filepath, transferpath)
-            except Exception as e:
-                print(f"Err sftp: {e}")
+            # try:
+            filepath = os.path.join(path, file)
+            transferpath = os.path.join(tpath, file)
+            sftp.put(filepath, transferpath)
+            # except Exception as e:
+            #     print(f"Err sftp: {e}")
     sftp.close()
 
 
@@ -65,8 +67,9 @@ def transfer(user, host):
                    allow_agent=True,
                    look_for_keys=True)
     remotehome = get_remote_home_directory(client)
-    print(f"Remote hashword dir: {remotehome}")
+    print(f"Remote home dir: {remotehome}")
     sftp = client.open_sftp()
-    sftp_transfer(temp, ensure_remote_dir(remotehome, sftp), sftp)
+    remotetarget = ensure_remote_dir(remotehome, sftp)
+    sftp_transfer(temp, remotetarget, sftp)
     client.close()
     shutil.rmtree(temp)

@@ -6,3 +6,7 @@ test-keys
 rsa_key_priv
 rsa_key_pub
 hashword.spec
+hashword_key_priv
+hashword_key_pub
+src/hashword_key_priv
+src/hashword_key_pub
