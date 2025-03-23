@@ -1,5 +1,7 @@
 #! /bin/python3
 import sys
+from json import JSONDecodeError
+from cryptography.fernet import InvalidToken
 from hashword import HashWord as hword
 from hashword import print_error as perror
 from hashword import print_usage as pusage
@@ -102,37 +104,45 @@ def parse_args():
 if __name__ == "__main__":
     h = hword()
     [argslist, optslist] = parse_args()
-    match argslist[0]:
-        case "add":
-            [algo, name, seed, size, rsapath] = execute_add(optslist)
-            h.create(algo, name, seed, size, rsapath)
-            name = optslist["name"]
-            print("Hashword {n} successfully added."
-                  .format(n=name))
-        case "alias":
-            h.alias(argslist[1], argslist[2])
-        case "list":
-            h.list_self()
-        case "rm":
-            h.delete(argslist[1])
-        case "rsa":
-            h.rsa_toggle(optslist["keypath"])
-        case "rsa_setup":
-            h.rsa_setup(optslist["force"], optslist["verbose"])
-        case "data":
-            print("Password data saved at {location}".format(
-                location=h.showpath()))
-        case "--help":
-            argslist.pop(0)
-            phelp(argslist)
-        case "audit":
-            print("Beginning audit...")
-            h.audit(optslist["keypath"])
-            print("Audit complete!")
-            h.list_self()
-        case "transfer":
-            user = argslist[1]
-            host = argslist[2]
-            h.connect(user, host)
-        case arg:
-            print(h.get(arg, optslist["keypath"]))
+    try:
+        match argslist[0]:
+            case "add":
+                [algo, name, seed, size, rsapath] = execute_add(optslist)
+                h.create(algo, name, seed, size, rsapath)
+                name = optslist["name"]
+                print("Hashword {n} successfully added."
+                      .format(n=name))
+            case "alias":
+                h.alias(argslist[1], argslist[2])
+            case "list":
+                h.list_self()
+            case "rm":
+                h.delete(argslist[1])
+            case "rsa":
+                h.rsa_toggle(optslist["keypath"])
+            case "rsa_setup":
+                h.rsa_setup(optslist["force"], optslist["verbose"])
+            case "data":
+                print("Password data saved at {location}".format(
+                    location=h.showpath()))
+            case "--help":
+                argslist.pop(0)
+                phelp(argslist)
+            case "audit":
+                print("Beginning audit...")
+                h.audit(optslist["keypath"])
+                print("Audit complete!")
+                h.list_self()
+            case "transfer":
+                user = argslist[1]
+                host = argslist[2]
+                h.connect(user, host)
+            case arg:
+                print(h.get(arg, optslist["keypath"]))
+    except (JSONDecodeError, InvalidToken) as e:
+        print(f"""Error {e} encountered loading password. There may be a
+        problem with the manifest. Use the `audit` command to fix a broken
+        manifest.""")
+    except Exception as e:
+        print(f"""Error {e} encountered.""")
+        exit(1)
