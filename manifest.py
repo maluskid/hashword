@@ -1,7 +1,7 @@
 import os
 import json
-from . import helptext
-from .filesys import FileSys
+from hashword import helptext
+from hashword.filesys import FileSys
 
 
 class Manifest:

@@ -1,7 +1,7 @@
 import os
 import paramiko
 import shutil
-from .filesys import FileSys
+from hashword.filesys import FileSys
 
 
 def get_remote_home_directory(ssh_client):

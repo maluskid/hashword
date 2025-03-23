@@ -1,9 +1,9 @@
 import os
 import rsa
 from cryptography.fernet import Fernet
-from . import helptext
-from .filesys import FileSys
-from .manifest import Manifest
+from hashword import helptext
+from hashword.filesys import FileSys
+from hashword.manifest import Manifest
 
 # If for some reason you want this program to generate RSA keys of a different
 # length, change that here.

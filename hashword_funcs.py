@@ -1,9 +1,9 @@
-from . import helptext
-from .pwdata import PwData
-from .manifest import Manifest
-from .filesys import FileSys
-from .rsaencrypt import Encrypto
-from .transfer import transfer
+from hashword import helptext
+from hashword.pwdata import PwData
+from hashword.manifest import Manifest
+from hashword.filesys import FileSys
+from hashword.rsaencrypt import Encrypto
+from hashword.transfer import transfer
 from copy import deepcopy
 from cryptography.fernet import InvalidToken
 import os

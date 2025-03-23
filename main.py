@@ -101,7 +101,7 @@ def parse_args():
     return [argslist, options]
 
 
-if __name__ == "__main__":
+def main():
     h = hword()
     [argslist, optslist] = parse_args()
     try:
@@ -146,3 +146,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"""Error {e} encountered.""")
         exit(1)
+
+
+if __name__ == "__main__":
+    main()
