@@ -10,3 +10,4 @@ hashword_key_priv
 hashword_key_pub
 src/hashword_key_priv
 src/hashword_key_pub
+hashword.egg-info
