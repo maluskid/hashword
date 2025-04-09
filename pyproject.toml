@@ -1,9 +1,11 @@
 [project]
 name = "hashword"
-version = "0.0.3"
+version = "0.1.1"
 authors = [{ name = "Dominic Maluskid", email = "dominic.maluski@gmail.com" }]
 description = "Hashword is a program to help you hash passwords with seeds, and keep track of them."
 readme = "README.md"
+license = { file = "LICENSE" }
+dependencies = ["cryptography >= 3.4", "rsa >= 4.8", "paramiko >= 3.5"]
 requires-python = ">=3.8"
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -16,5 +18,12 @@ Homepage = "https://github.com/maluskid/hashword"
 Issues = "https://github.com/maluskid/hashword/issues"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+hashword = "hashword.main:main"
+
+[tool.setuptools]
+packages = ["hashword"]
+package-dir = { "hashword" = "src/hashword" }

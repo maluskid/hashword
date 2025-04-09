@@ -21,11 +21,13 @@ def seed_generator():
 
 class PwData:
 
-    def __init__(self, name, size, algo='sha256', seed=seed_generator()):
-        self.hash_alg = algo
-        self.name = name
-        self.seed = seed
-        self.size = size
+    def __init__(self, data):
+        self.hash_alg = data['algo']
+        self.name = data['name']
+        self.seed = data['seed']
+        self.size = data['size']
+        if not self.seed:
+            self.seed = seed_generator()
 
     def getpw(self, verbose=False):
         h = None
