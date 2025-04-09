@@ -11,9 +11,9 @@ class FileSys:
 
     def __init__(self):
         # Main data path
-        # self.DATA_PATH = os.path.join(PATH, 'Data/')
+        self.DATA_PATH = os.path.join(PATH, 'Data')
         # Alternate testing data PATH
-        self.DATA_PATH = os.path.join(PATH, 'Testing')
+        # self.DATA_PATH = os.path.join(PATH, 'Testing')
         self.PRIV_KEY_PATH = os.path.join(KEYPATH, 'hashword_key_priv')
         self.PUB_KEY_PATH = os.path.join(KEYPATH, 'hashword_key_pub')
         self.SSH_PATH = os.path.join(KEYPATH, '.ssh')
