@@ -18,6 +18,7 @@ class Manifest:
         data directory.'''
         with open(self.p.M_PATH, 'w+') as m:
             msaver = {
+                "encrypted": self.encrypted,
                 "passwords": self.passwords,
                 "aliases": self.aliases
             }
@@ -71,14 +72,6 @@ class Manifest:
             self.passwords.append(password)
         else:
             raise (ValueError("Element already exists in list."))
-
-    def print(self):
-        print("Passwords:\n")
-        for p in self.passwords:
-            print(p)
-        print("Aliases:\n")
-        for k, v in self.aliases.items():
-            print(k, " --> ", v)
 
     def rm_pw(self, target):
 

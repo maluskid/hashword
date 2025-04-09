@@ -52,19 +52,6 @@ ADD_TEXT = "Usage: hashword add\n" \
     "\n\n\tSeeds are stored with the rest of password data in the encrypted" \
     "\n\tfiles located in `../.hashword/data`. The full path to this" \
     "\n\tdirectory can be viewed with the `data` command." \
-    "\n\nFlags: -a, -S, -s\n" \
-    "\n\t(-a || --algorithm) <foo> Determines which algorithm to use." \
-    "\n\tIf no value is supplied, the default sha256 hash will be used." \
-    "\n\tValid inputs: blake2b, md5, sha256, sha-3\n" \
-    "\n\t(-S || --seed) <foo> Determines a seed phrase for the hashed" \
-    "\n\tpassword. If no value is supplied, a randomized seed will be used." \
-    "\n\tIt will be impossible to recreate this hash without specifying a" \
-    "\n\tseed.\n" \
-    "\n\t(-s || --size) <int> Sets the length of the hex string output of" \
-    "\n\tthe hash. Defaults to maximum size for pertaining algorithm, if a" \
-    "\n\tnumber larger than the algorithm supports is entered, the default is" \
-    "\n\tused."
-
 
 ADD_FLAGS = """
 Flags:
@@ -207,9 +194,8 @@ ERROR_MSG = """
 Error: {err} Use `hashword --help` for more information.
 """
 
+
 # Helper functions for printing various important messages below --------------
-
-
 def print_error(error):
     print(ERROR_MSG.format(err=error))
 

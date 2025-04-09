@@ -16,8 +16,9 @@ def execute_add(options):
         case {"algo": algo,
               "name": name,
               "seed": seed,
-              "size": size}:
-            return (algo, name, seed, size)
+              "size": size,
+              "keypath": rsapath}:
+            return (algo, name, seed, size, rsapath)
         case _:
             raise (Exception("An unforseen circumstance has arisen"))
 
@@ -29,6 +30,7 @@ def parse_args():
         "name": None,
         "seed": None,
         "size": None,
+        "keypath": None,
         "force": None,
         "verbose": None
     }
@@ -49,6 +51,8 @@ def parse_args():
                                     options["seed"] = value
                                 case [('-s' | '--size'), value]:
                                     options["size"] = int(value)
+                                case [('-k' | '--key'), value]:
+                                    options["keypath"] = value
                                 case [first, second]:
                                     errormsg = "Option {f} {s} not recognized."
                                     errormsg.format(f=first, s=second)
